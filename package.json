@@ -3,7 +3,7 @@
   "author": "bun913",
   "homepage": "https://github.com/bun913/mcp-testrail",
   "private": true,
-  "version": "0.11.0",
+  "version": "0.11.1",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
