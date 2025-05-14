@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/bun913-mcp-testrail-badge.png)](https://mseep.ai/app/bun913-mcp-testrail)
+
 # TestRail MCP Server
 
 This Model Context Protocol (MCP) server provides tools for interacting with TestRail directly from Claude AI and other MCP-supported clients like Cursor. It allows you to manage test cases, projects, suites, runs, and more without leaving your conversation with the AI.
