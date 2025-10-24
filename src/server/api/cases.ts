@@ -174,7 +174,7 @@ export function registerCaseTools(
 	// Add a new test case
 	server.tool(
 		"addCase",
-		"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, etc. Use getCaseTypes to find valid typeId values. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead.",
+		"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Use getCaseTypes to find valid typeId values. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
 		{
 			sectionId: addTestCaseSchema.shape.sectionId,
 			title: addTestCaseSchema.shape.title,
@@ -188,6 +188,7 @@ export function registerCaseTools(
 			customSteps: addTestCaseSchema.shape.customSteps,
 			customExpected: addTestCaseSchema.shape.customExpected,
 			customStepsSeparated: addTestCaseSchema.shape.customStepsSeparated,
+			customFields: addTestCaseSchema.shape.customFields,
 		},
 		async (args, extra) => {
 			try {
@@ -204,6 +205,7 @@ export function registerCaseTools(
 					customSteps,
 					customExpected,
 					customStepsSeparated,
+					customFields,
 				} = args;
 				// Build test case data
 				const data: Record<string, unknown> = {};
@@ -257,6 +259,13 @@ export function registerCaseTools(
 					data.custom_steps_separated = customStepsSeparated;
 				}
 
+				// Add additional custom fields from customFields object
+				if (customFields) {
+					for (const [key, value] of Object.entries(customFields)) {
+						data[key] = value;
+					}
+				}
+
 				// Remove empty, undefined, null fields to avoid API errors
 				for (const key of Object.keys(data)) {
 					const value = data[key];
@@ -291,7 +300,7 @@ export function registerCaseTools(
 	// Update an existing test case
 	server.tool(
 		"updateCase",
-		"Updates an existing test case. REQUIRED: caseId. OPTIONAL: title, typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, etc. Only specified fields will be updated. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead.",
+		"Updates an existing test case. REQUIRED: caseId. OPTIONAL: title, typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Only specified fields will be updated. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
 		{
 			caseId: updateTestCaseSchema.shape.caseId,
 			title: updateTestCaseSchema.shape.title,
@@ -305,6 +314,7 @@ export function registerCaseTools(
 			customSteps: updateTestCaseSchema.shape.customSteps,
 			customExpected: updateTestCaseSchema.shape.customExpected,
 			customStepsSeparated: updateTestCaseSchema.shape.customStepsSeparated,
+			customFields: updateTestCaseSchema.shape.customFields,
 		},
 		async (args, extra) => {
 			try {
@@ -321,6 +331,7 @@ export function registerCaseTools(
 					customSteps,
 					customExpected,
 					customStepsSeparated,
+					customFields,
 				} = args;
 				// Build update data
 				const data: Record<string, unknown> = {};
@@ -372,6 +383,13 @@ export function registerCaseTools(
 				}
 				if (customStepsSeparated) {
 					data.custom_steps_separated = customStepsSeparated;
+				}
+
+				// Add additional custom fields from customFields object
+				if (customFields) {
+					for (const [key, value] of Object.entries(customFields)) {
+						data[key] = value;
+					}
 				}
 
 				const testCase = await testRailClient.cases.updateCase(caseId, data);
@@ -593,7 +611,7 @@ export function registerCaseTools(
 	// Update multiple test cases
 	server.tool(
 		"updateCases",
-		"Updates multiple test cases simultaneously with the same field values / 複数のテストケースを同じフィールド値で一括更新します. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead.",
+		"Updates multiple test cases simultaneously with the same field values / 複数のテストケースを同じフィールド値で一括更新します. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
 		{
 			projectId: updateTestCasesSchema.shape.projectId,
 			suiteId: updateTestCasesSchema.shape.suiteId,
@@ -609,6 +627,7 @@ export function registerCaseTools(
 			customSteps: updateTestCasesSchema.shape.customSteps,
 			customExpected: updateTestCasesSchema.shape.customExpected,
 			customStepsSeparated: updateTestCasesSchema.shape.customStepsSeparated,
+			customFields: updateTestCasesSchema.shape.customFields,
 		},
 		async (args, extra) => {
 			try {
@@ -627,6 +646,7 @@ export function registerCaseTools(
 					customSteps,
 					customExpected,
 					customStepsSeparated,
+					customFields,
 				} = args;
 
 				// Build update data
@@ -679,6 +699,13 @@ export function registerCaseTools(
 				}
 				if (customStepsSeparated) {
 					data.custom_steps_separated = customStepsSeparated;
+				}
+
+				// Add additional custom fields from customFields object
+				if (customFields) {
+					for (const [key, value] of Object.entries(customFields)) {
+						data[key] = value;
+					}
 				}
 
 				// Remove empty, undefined, null fields to avoid API errors
