@@ -26,7 +26,7 @@
     "debug": "node scripts/debug.js"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^0.14.3",
+    "@modelcontextprotocol/inspector": "^0.17.2",
     "@types/express": "^5.0.1",
     "@types/node": "^22.13.14",
     "@vitest/coverage-v8": "^3.0.9",

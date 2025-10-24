@@ -36,6 +36,12 @@ export const addTestCaseSchema = z.object({
 		)
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
+	customFields: z
+		.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+		.optional()
+		.describe(
+			"Additional custom fields as key-value pairs (e.g., {custom_case_security_score: 'high'})",
+		),
 });
 
 // Schema for updating a test case
@@ -63,6 +69,12 @@ export const updateTestCaseSchema = z.object({
 		)
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
+	customFields: z
+		.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+		.optional()
+		.describe(
+			"Additional custom fields as key-value pairs (e.g., {custom_case_security_score: 'high'})",
+		),
 });
 
 // Schema for deleting a test case
@@ -120,6 +132,12 @@ export const updateTestCasesSchema = z.object({
 		)
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
+	customFields: z
+		.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+		.optional()
+		.describe(
+			"Additional custom fields as key-value pairs (e.g., {custom_case_security_score: 'high'})",
+		),
 });
 
 // Create Zod objects from each schema
@@ -271,6 +289,7 @@ export type TestRailCaseHistory = z.infer<typeof TestRailCaseHistorySchema>;
 
 /**
  * Schema for data when adding a test case via client API
+ * Uses .passthrough() to allow any custom fields (custom_*) from TestRail
  */
 export const addCaseDataSchema = z
 	.object({
@@ -293,10 +312,11 @@ export const addCaseDataSchema = z
 			)
 			.optional(),
 	})
-	.strict();
+	.passthrough();
 
 /**
  * Schema for data when updating a test case via client API
+ * Uses .passthrough() to allow any custom fields (custom_*) from TestRail
  */
 export const updateCaseDataSchema = z
 	.object({
@@ -319,7 +339,7 @@ export const updateCaseDataSchema = z
 			)
 			.optional(),
 	})
-	.strict();
+	.passthrough();
 
 export type AddCaseData = z.infer<typeof addCaseDataSchema>;
 export type UpdateCaseData = z.infer<typeof updateCaseDataSchema>;
