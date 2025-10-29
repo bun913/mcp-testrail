@@ -37,7 +37,7 @@ export const addTestCaseSchema = z.object({
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
 	customFields: z
-		.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+		.record(z.unknown())
 		.optional()
 		.describe(
 			"Additional custom fields as key-value pairs (e.g., {custom_case_security_score: 'high'})",
@@ -70,7 +70,7 @@ export const updateTestCaseSchema = z.object({
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
 	customFields: z
-		.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+		.record(z.unknown())
 		.optional()
 		.describe(
 			"Additional custom fields as key-value pairs (e.g., {custom_case_security_score: 'high'})",
@@ -133,7 +133,7 @@ export const updateTestCasesSchema = z.object({
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
 	customFields: z
-		.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+		.record(z.unknown())
 		.optional()
 		.describe(
 			"Additional custom fields as key-value pairs (e.g., {custom_case_security_score: 'high'})",
