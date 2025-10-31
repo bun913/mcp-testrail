@@ -16,7 +16,6 @@ import {
 	TestRailCase,
 	TestRailCaseSchema,
 } from "../../shared/schemas/cases.js";
-import { z } from "zod";
 
 /**
  * Function to register test case-related API tools
@@ -92,35 +91,62 @@ export function registerCaseTools(
 	// Get all test cases for a project
 	server.tool(
 		"getCases",
-		"Retrieves test cases list with basic fields only (excludes steps/expected results for performance). REQUIRED: projectId, suiteId. OPTIONAL: limit (default 50), offset (default 0). Use getCase for full details.",
+		"Retrieves test cases list with basic fields only (excludes steps/expected results for performance). REQUIRED: projectId, suiteId. OPTIONAL: createdBy, filter, limit (default 50), milestoneId, offset (default 0), priorityId, refs, sectionId, templateId, typeId, updatedBy, labelId. Use getCase for full details.",
 		{
 			projectId: getTestCasesSchema.shape.projectId,
 			suiteId: getTestCasesSchema.shape.suiteId,
-			limit: z
-				.number()
-				.min(1)
-				.optional()
-				.default(50)
-				.describe(
-					"Number of cases to return per page. If you cannot get all cases, try separating the request into multiple calls",
-				),
-			offset: z
-				.number()
-				.optional()
-				.default(0)
-				.describe("Offset for pagination"),
+			createdBy: getTestCasesSchema.shape.createdBy,
+			filter: getTestCasesSchema.shape.filter,
+			limit: getTestCasesSchema.shape.limit,
+			milestoneId: getTestCasesSchema.shape.milestoneId,
+			offset: getTestCasesSchema.shape.offset,
+			priorityId: getTestCasesSchema.shape.priorityId,
+			refs: getTestCasesSchema.shape.refs,
+			sectionId: getTestCasesSchema.shape.sectionId,
+			templateId: getTestCasesSchema.shape.templateId,
+			typeId: getTestCasesSchema.shape.typeId,
+			updatedBy: getTestCasesSchema.shape.updatedBy,
+			labelId: getTestCasesSchema.shape.labelId,
 		},
 		async (args, extra) => {
 			try {
-				const { projectId, suiteId, limit = 50, offset = 0 } = args;
+				const {
+					projectId,
+					suiteId,
+					createdBy,
+					filter,
+					limit = 50,
+					milestoneId,
+					offset = 0,
+					priorityId,
+					refs,
+					sectionId,
+					templateId,
+					typeId,
+					updatedBy,
+					labelId,
+				} = args;
+
+				// Build params object with clean direct parameter mapping
+				const params = {
+					limit,
+					offset,
+					created_by: createdBy?.join(","),
+					filter,
+					milestone_id: milestoneId?.join(","),
+					priority_id: priorityId?.join(","),
+					refs,
+					section_id: sectionId,
+					template_id: templateId?.join(","),
+					type_id: typeId?.join(","),
+					updated_by: updatedBy?.join(","),
+					label_id: labelId?.join(","),
+				};
+
 				const testCases = await testRailClient.cases.getCases(
 					projectId,
 					suiteId,
-					{
-						suite_id: suiteId,
-						limit,
-						offset,
-					},
+					params,
 				);
 
 				// Always filter to default columns to reduce response size
