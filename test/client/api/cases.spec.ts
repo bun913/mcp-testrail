@@ -199,6 +199,185 @@ describe('Cases API', () => {
     expect(result).toEqual(mockCasesResponse);
   });
 
+  it('retrieves test cases with all optional parameters', async () => {
+    // Mock response
+    const mockCasesArray = [
+      {
+        id: 1,
+        title: 'Filtered Test Case',
+        section_id: 1,
+        template_id: 1,
+        type_id: 1,
+        priority_id: 2,
+        created_by: 1,
+        created_on: 1609459200,
+        updated_by: 1,
+        updated_on: 1609459300,
+        suite_id: 1
+      }
+    ];
+
+    const mockCasesResponse = {
+      cases: mockCasesArray,
+      offset: 0,
+      limit: 25,
+      size: 1,
+      _links: {
+        next: null,
+        prev: null
+      }
+    };
+
+    mockAxiosInstance.get.mockResolvedValue({ data: mockCasesResponse });
+
+    // Test method with all optional parameters
+    const params = {
+      limit: 25,
+      offset: 0,
+      created_by: '1,2,3', // Array converted to comma-separated string
+      filter: 'Login Test',
+      milestone_id: '5,6', // Array converted to comma-separated string
+      priority_id: '2,3', // Array converted to comma-separated string
+      refs: 'TR-123',
+      section_id: 1,
+      template_id: '1,2', // Array converted to comma-separated string
+      type_id: '1,2', // Array converted to comma-separated string
+      updated_by: '4,5', // Array converted to comma-separated string
+      label_id: '7,8' // Array converted to comma-separated string
+    };
+
+    const result = await client.cases.getCases(1, 1, params);
+
+    // Verify axios get was called correctly with all parameters
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_cases/1', {
+      params: {
+        suite_id: 1,
+        limit: 25,
+        offset: 0,
+        created_by: '1,2,3',
+        filter: 'Login Test',
+        milestone_id: '5,6',
+        priority_id: '2,3',
+        refs: 'TR-123',
+        section_id: 1,
+        template_id: '1,2',
+        type_id: '1,2',
+        updated_by: '4,5',
+        label_id: '7,8'
+      }
+    });
+
+    // Verify result
+    expect(result).toEqual(mockCasesResponse);
+  });
+
+  it('retrieves test cases with filter and refs parameters', async () => {
+    // Mock response
+    const mockCasesArray = [
+      {
+        id: 2,
+        title: 'Registration Test with Reference',
+        section_id: 2,
+        template_id: 1,
+        type_id: 1,
+        priority_id: 3,
+        created_by: 2,
+        created_on: 1609459200,
+        updated_by: 2,
+        updated_on: 1609459300,
+        suite_id: 1,
+        refs: 'TR-456'
+      }
+    ];
+
+    const mockCasesResponse = {
+      cases: mockCasesArray,
+      offset: 0,
+      limit: 50,
+      size: 1,
+      _links: {
+        next: null,
+        prev: null
+      }
+    };
+
+    mockAxiosInstance.get.mockResolvedValue({ data: mockCasesResponse });
+
+    // Test method with filter and refs parameters
+    const params = {
+      filter: 'Registration',
+      refs: 'TR-456'
+    };
+
+    const result = await client.cases.getCases(1, 1, params);
+
+    // Verify axios get was called correctly
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_cases/1', {
+      params: {
+        suite_id: 1,
+        filter: 'Registration',
+        refs: 'TR-456',
+        limit: 50,
+        offset: 0
+      }
+    });
+
+    // Verify result
+    expect(result).toEqual(mockCasesResponse);
+  });
+
+  it('retrieves test cases with section_id parameter', async () => {
+    // Mock response
+    const mockCasesArray = [
+      {
+        id: 3,
+        title: 'Section Specific Test',
+        section_id: 5,
+        template_id: 1,
+        type_id: 2,
+        priority_id: 1,
+        created_by: 1,
+        created_on: 1609459200,
+        updated_by: 1,
+        updated_on: 1609459300,
+        suite_id: 1
+      }
+    ];
+
+    const mockCasesResponse = {
+      cases: mockCasesArray,
+      offset: 0,
+      limit: 50,
+      size: 1,
+      _links: {
+        next: null,
+        prev: null
+      }
+    };
+
+    mockAxiosInstance.get.mockResolvedValue({ data: mockCasesResponse });
+
+    // Test method with section_id parameter
+    const params = {
+      section_id: 5
+    };
+
+    const result = await client.cases.getCases(1, 1, params);
+
+    // Verify axios get was called correctly
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_cases/1', {
+      params: {
+        suite_id: 1,
+        section_id: 5,
+        limit: 50,
+        offset: 0
+      }
+    });
+
+    // Verify result
+    expect(result).toEqual(mockCasesResponse);
+  });
+
   it('retrieves test case history', async () => {
     // Mock response
     const mockHistory = [

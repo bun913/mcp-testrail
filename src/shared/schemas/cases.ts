@@ -9,6 +9,68 @@ export const getTestCaseSchema = z.object({
 export const getTestCasesSchema = z.object({
 	projectId: z.number().describe("TestRail Project ID"),
 	suiteId: z.number().describe("TestRail Suite ID"),
+	createdBy: z
+		.array(z.number())
+		.optional()
+		.describe("A comma-separated list of creators (user IDs) to filter by"),
+	filter: z
+		.string()
+		.optional()
+		.describe(
+			"Only return cases with matching filter string in the case title",
+		),
+	limit: z
+		.number()
+		.min(1)
+		.optional()
+		.default(50)
+		.describe(
+			"The number of test cases the response should return (The response size is 50 by default) —requires TestRail 6.7 or later",
+		),
+	milestoneId: z
+		.array(z.number())
+		.optional()
+		.describe(
+			"A comma-separated list of milestone IDs to filter by (not available if the milestone field is disabled for the project)",
+		),
+	offset: z
+		.number()
+		.optional()
+		.default(0)
+		.describe(
+			"Where to start counting the tests cases from (the offset)—requires TestRail 6.7 or later",
+		),
+	priorityId: z
+		.array(z.number())
+		.optional()
+		.describe("A comma-separated list of priority IDs to filter by"),
+	refs: z
+		.string()
+		.optional()
+		.describe(
+			"A single Reference ID (e.g. TR-1, 4291, etc.) —requires TestRail 6.5.2 or later",
+		),
+	sectionId: z.number().optional().describe("The ID of a test case section"),
+	templateId: z
+		.array(z.number())
+		.optional()
+		.describe(
+			"A comma-separated list of template IDs to filter by —requires TestRail 5.2 or later",
+		),
+	typeId: z
+		.array(z.number())
+		.optional()
+		.describe("A comma-separated list of case type IDs to filter by"),
+	updatedBy: z
+		.array(z.number())
+		.optional()
+		.describe(
+			"A comma-separated list of user IDs who updated test cases to filter by",
+		),
+	labelId: z
+		.array(z.number())
+		.optional()
+		.describe("A comma-separated list of label IDs to filter by"),
 });
 
 // Schema for adding a test case
