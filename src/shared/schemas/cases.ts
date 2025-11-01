@@ -29,10 +29,12 @@ export const addTestCaseSchema = z.object({
 	customExpected: z.string().optional().describe("Expected results"),
 	customStepsSeparated: z
 		.array(
-			z.object({
-				content: z.string().describe("Step content"),
-				expected: z.string().describe("Expected result"),
-			}),
+			z
+				.object({
+					content: z.string().describe("Step content"),
+					expected: z.string().describe("Expected result"),
+				})
+				.passthrough(),
 		)
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
@@ -62,10 +64,12 @@ export const updateTestCaseSchema = z.object({
 	customExpected: z.string().optional().describe("Expected results"),
 	customStepsSeparated: z
 		.array(
-			z.object({
-				content: z.string().describe("Step content"),
-				expected: z.string().describe("Expected result"),
-			}),
+			z
+				.object({
+					content: z.string().describe("Step content"),
+					expected: z.string().describe("Expected result"),
+				})
+				.passthrough(),
 		)
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
@@ -125,10 +129,12 @@ export const updateTestCasesSchema = z.object({
 	customExpected: z.string().optional().describe("Expected results"),
 	customStepsSeparated: z
 		.array(
-			z.object({
-				content: z.string().describe("Step content"),
-				expected: z.string().describe("Expected result"),
-			}),
+			z
+				.object({
+					content: z.string().describe("Step content"),
+					expected: z.string().describe("Expected result"),
+				})
+				.passthrough(),
 		)
 		.optional()
 		.describe("Separated test steps array (requires template_id=2)"),
@@ -305,10 +311,12 @@ export const addCaseDataSchema = z
 		custom_expected: z.string().optional(),
 		custom_steps_separated: z
 			.array(
-				z.object({
-					content: z.string(),
-					expected: z.string(),
-				}),
+				z
+					.object({
+						content: z.string(),
+						expected: z.string(),
+					})
+					.passthrough(),
 			)
 			.optional(),
 	})
@@ -332,10 +340,12 @@ export const updateCaseDataSchema = z
 		custom_expected: z.string().optional(),
 		custom_steps_separated: z
 			.array(
-				z.object({
-					content: z.string(),
-					expected: z.string(),
-				}),
+				z
+					.object({
+						content: z.string(),
+						expected: z.string(),
+					})
+					.passthrough(),
 			)
 			.optional(),
 	})
