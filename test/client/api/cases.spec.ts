@@ -199,6 +199,94 @@ describe('Cases API', () => {
     expect(result).toEqual(mockCasesResponse);
   });
 
+  it('retrieves test cases with all optional parameters', async () => {
+    // Mock response
+    mockAxiosInstance.get.mockResolvedValue({ data: {} });
+
+    // Test method with all optional parameters
+    const params = {
+      limit: 25,
+      offset: 0,
+      created_by: '1,2,3', // Array converted to comma-separated string
+      filter: 'Login Test',
+      milestone_id: '5,6', // Array converted to comma-separated string
+      priority_id: '2,3', // Array converted to comma-separated string
+      refs: 'TR-123',
+      section_id: 1,
+      template_id: '1,2', // Array converted to comma-separated string
+      type_id: '1,2', // Array converted to comma-separated string
+      updated_by: '4,5', // Array converted to comma-separated string
+      label_id: '7,8' // Array converted to comma-separated string
+    };
+
+    await client.cases.getCases(1, 1, params);
+
+    // Verify axios get was called correctly with all parameters
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_cases/1', {
+      params: {
+        suite_id: 1,
+        limit: 25,
+        offset: 0,
+        created_by: '1,2,3',
+        filter: 'Login Test',
+        milestone_id: '5,6',
+        priority_id: '2,3',
+        refs: 'TR-123',
+        section_id: 1,
+        template_id: '1,2',
+        type_id: '1,2',
+        updated_by: '4,5',
+        label_id: '7,8'
+      }
+    });
+  });
+
+  it('retrieves test cases with filter and refs parameters', async () => {
+    // Mock response
+    mockAxiosInstance.get.mockResolvedValue({ data: {} });
+
+    // Test method with filter and refs parameters
+    const params = {
+      filter: 'Registration',
+      refs: 'TR-456'
+    };
+
+    await client.cases.getCases(1, 1, params);
+
+    // Verify axios get was called correctly
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_cases/1', {
+      params: {
+        suite_id: 1,
+        filter: 'Registration',
+        refs: 'TR-456',
+        limit: 50,
+        offset: 0
+      }
+    });
+  });
+
+  it('retrieves test cases with section_id parameter', async () => {
+    // Mock response
+    mockAxiosInstance.get.mockResolvedValue({ data: {} });
+
+    // Test method with section_id parameter
+    const params = {
+      section_id: 5
+    };
+
+    await client.cases.getCases(1, 1, params);
+
+    // Verify axios get was called correctly
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_cases/1', {
+      params: {
+        suite_id: 1,
+        section_id: 5,
+        limit: 50,
+        offset: 0
+      }
+    });
+  });
+
   it('retrieves test case history', async () => {
     // Mock response
     const mockHistory = [
