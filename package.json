@@ -6,7 +6,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.17.1",
+  "version": "0.17.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -49,8 +49,8 @@
     "mcp-testrail": "./dist/stdio.js"
   },
   "repository": {
-		"type": "git",
-		"url": "git+https://github.com/bun913/mcp-testrail.git"
-	},
-	"license": "MIT"
+    "type": "git",
+    "url": "git+https://github.com/bun913/mcp-testrail.git"
+  },
+  "license": "MIT"
 }
