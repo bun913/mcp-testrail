@@ -52,7 +52,7 @@ You can connect this MCP server by setting like the below. This method uses `npx
 - **Connection issues**: Verify that the server is running and the URL is correctly configured in your MCP client.
 - **Authentication issues**: Check your TestRail API credentials in the `.env` file.
 - **SSE connection errors**: If you see `SSE error: TypeError: fetch failed: connect ECONNREFUSED`, make sure the server is running on the specified port.
-- **Your conversation is too long**: Use `limit` and `offset` on `getCases` to paginate test cases (e.g. limit=50, offset=0).
+- **Your conversation is too long**: Pleae use `limit` and `offset` parameter for test cases
 
 ## Contributing
 
