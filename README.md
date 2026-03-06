@@ -2,6 +2,12 @@
 
 This Model Context Protocol (MCP) server provides tools for interacting with TestRail directly from Claude AI and other MCP-supported clients like Cursor. It allows you to manage test cases, projects, suites, runs, and more without leaving your conversation with the AI.
 
+## Key Features
+
+- **Test cases**: List cases with pagination (`limit`, `offset`) and filters; `getCases` returns a lightweight response (no steps/expected by default) for better performance—use `getCase` for full details. Bulk update with `updateCases`.
+- **Custom fields and steps**: `addCase` and `updateCase` support `customStepsSeparated` (template_id=2), `customFields`, and standard fields (priority, estimate, refs, etc.).
+- **BDD / Gherkin**: Import and export scenarios with `addBdd` (raw .feature content into a section) and `getBdd` (export a case as Gherkin).
+
 ## Available Tools
 
 The TestRail MCP server provides the following tools:
@@ -10,7 +16,7 @@ The TestRail MCP server provides the following tools:
 |----------|-------|
 | **Projects** | `getProjects`, `getProject` |
 | **Suites** | `getSuites`, `getSuite`, `addSuite`, `updateSuite` |
-| **Cases** | `getCase`, `getCases`, `addCase`, `updateCase`, `deleteCase`, `getCaseTypes`, `getCaseFields`, `copyToSection`, `moveToSection`, `getCaseHistory`, `updateCases` |
+| **Cases** | `getCase`, `getCases`, `addCase`, `updateCase`, `deleteCase`, `getCaseTypes`, `getCaseFields`, `copyToSection`, `moveToSection`, `getCaseHistory`, `updateCases`, `addBdd`, `getBdd` |
 | **Sections** | `getSection`, `getSections`, `addSection`, `moveSection`, `updateSection`, `deleteSection` |
 | **Runs** | `getRuns`, `getRun`, `addRun`, `updateRun` |
 | **Tests** | `getTests`, `getTest` |
@@ -46,7 +52,7 @@ You can connect this MCP server by setting like the below. This method uses `npx
 - **Connection issues**: Verify that the server is running and the URL is correctly configured in your MCP client.
 - **Authentication issues**: Check your TestRail API credentials in the `.env` file.
 - **SSE connection errors**: If you see `SSE error: TypeError: fetch failed: connect ECONNREFUSED`, make sure the server is running on the specified port.
-- **Your conversation is too long**: Pleae use `limit` and `offset` parameter for test cases
+- **Your conversation is too long**: Use `limit` and `offset` on `getCases` to paginate test cases (e.g. limit=50, offset=0).
 
 ## Contributing
 
