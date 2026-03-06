@@ -2,12 +2,6 @@
 
 This Model Context Protocol (MCP) server provides tools for interacting with TestRail directly from Claude AI and other MCP-supported clients like Cursor. It allows you to manage test cases, projects, suites, runs, and more without leaving your conversation with the AI.
 
-## Key Features
-
-- **Test cases**: List cases with pagination (`limit`, `offset`) and filters; `getCases` returns a lightweight response (no steps/expected by default) for better performance—use `getCase` for full details. Bulk update with `updateCases`.
-- **Custom fields and steps**: `addCase` and `updateCase` support `customStepsSeparated` (template_id=2), `customFields`, and standard fields (priority, estimate, refs, etc.).
-- **BDD / Gherkin**: Import and export scenarios with `addBdd` (raw .feature content into a section) and `getBdd` (export a case as Gherkin).
-
 ## Available Tools
 
 The TestRail MCP server provides the following tools:
