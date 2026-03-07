@@ -37,7 +37,7 @@ jobs:
         run: npm run build
 
       - name: Setup TestRail API key
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@latest
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           show_full_output: true
@@ -46,7 +46,7 @@ jobs:
             --model claude-sonnet-4-6
 
       - name: Run E2E tests
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@latest
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           show_full_output: true
