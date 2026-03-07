@@ -36,6 +36,7 @@
   "dependencies": {
     "@biomejs/biome": "^1.9.4",
     "@modelcontextprotocol/sdk": "^1.24.0",
+    "@playwright/cli": "^0.1.1",
     "axios": "^1.8.4",
     "dotenv": "^16.4.5",
     "fastmcp": "^1.20.5",
@@ -43,14 +44,14 @@
     "zod": "^3.24.2"
   },
   "engines": {
-    "node": ">=20.18.1 <=22.14.0"
+    "node": ">=20.18.1"
   },
   "bin": {
     "mcp-testrail": "./dist/stdio.js"
   },
   "repository": {
-		"type": "git",
-		"url": "git+https://github.com/bun913/mcp-testrail.git"
-	},
-	"license": "MIT"
+    "type": "git",
+    "url": "git+https://github.com/bun913/mcp-testrail.git"
+  },
+  "license": "MIT"
 }
