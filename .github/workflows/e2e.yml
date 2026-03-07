@@ -8,6 +8,10 @@ on:
         required: false
         default: "main"
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
