@@ -415,3 +415,18 @@ export const updateCaseDataSchema = z
 
 export type AddCaseData = z.infer<typeof addCaseDataSchema>;
 export type UpdateCaseData = z.infer<typeof updateCaseDataSchema>;
+
+// Schema for importing a BDD scenario
+export const addBddSchema = z.object({
+	sectionId: z
+		.number()
+		.describe("TestRail Section ID where the BDD case will be created"),
+	featureContent: z
+		.string()
+		.describe("Raw Gherkin .feature file content (plain text)"),
+});
+
+// Schema for exporting a BDD scenario
+export const getBddSchema = z.object({
+	caseId: z.number().describe("TestRail Case ID to export as .feature"),
+});

@@ -15,6 +15,8 @@ import {
 	updateTestCasesSchema,
 	TestRailCase,
 	TestRailCaseSchema,
+	addBddSchema,
+	getBddSchema,
 } from "../../shared/schemas/cases.js";
 
 /**
@@ -757,6 +759,72 @@ export function registerCaseTools(
 			} catch (error) {
 				const errorResponse = createErrorResponse(
 					`Error updating test cases for project ${args.projectId}`,
+					error,
+				);
+				return {
+					content: [{ type: "text", text: JSON.stringify(errorResponse) }],
+					isError: true,
+				};
+			}
+		},
+	);
+
+	// Import a BDD .feature file into a section
+	server.tool(
+		"addBdd",
+		"Imports/uploads a .feature file (Gherkin BDD scenario) into a TestRail section. Creates a new test case with BDD template (template_id=4) and populates the custom_testrail_bdd_scenario field. REQUIRED: sectionId, featureContent (raw Gherkin text including Feature:, Scenario:, Given/When/Then).",
+		{
+			sectionId: addBddSchema.shape.sectionId,
+			featureContent: addBddSchema.shape.featureContent,
+		},
+		async (args, extra) => {
+			try {
+				const { sectionId, featureContent } = args;
+				const result = await testRailClient.cases.addBdd(
+					sectionId,
+					featureContent,
+				);
+				const successResponse = createSuccessResponse(
+					"BDD scenario imported successfully",
+					{ case: result },
+				);
+				return {
+					content: [{ type: "text", text: JSON.stringify(successResponse) }],
+				};
+			} catch (error) {
+				const errorResponse = createErrorResponse(
+					`Error importing BDD scenario to section ${args.sectionId}`,
+					error,
+				);
+				return {
+					content: [{ type: "text", text: JSON.stringify(errorResponse) }],
+					isError: true,
+				};
+			}
+		},
+	);
+
+	// Export a BDD test case as .feature file
+	server.tool(
+		"getBdd",
+		"Exports a BDD test case as a .feature file in Gherkin format. REQUIRED: caseId.",
+		{
+			caseId: getBddSchema.shape.caseId,
+		},
+		async (args, extra) => {
+			try {
+				const { caseId } = args;
+				const result = await testRailClient.cases.getBdd(caseId);
+				const successResponse = createSuccessResponse(
+					"BDD scenario exported successfully",
+					{ featureContent: result },
+				);
+				return {
+					content: [{ type: "text", text: JSON.stringify(successResponse) }],
+				};
+			} catch (error) {
+				const errorResponse = createErrorResponse(
+					`Error exporting BDD scenario for case ${args.caseId}`,
 					error,
 				);
 				return {

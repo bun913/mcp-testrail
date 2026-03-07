@@ -304,4 +304,51 @@ export class CasesClient extends BaseTestRailClient {
 			throw handleApiError(error, "Failed to delete test cases");
 		}
 	}
+
+	/**
+	 * Imports a .feature file (Gherkin BDD scenario) into a TestRail section.
+	 * Uses the dedicated add_bdd endpoint which is the only way to populate
+	 * the custom_testrail_bdd_scenario field.
+	 * @param sectionId The ID of the section
+	 * @param featureContent Raw Gherkin .feature file content
+	 * @returns Promise with created/updated test case
+	 */
+	async addBdd(sectionId: number, featureContent: string) {
+		try {
+			const FormData = (await import("form-data")).default;
+			const form = new FormData();
+			form.append("attachment", Buffer.from(featureContent, "utf-8"), {
+				filename: "scenario.feature",
+				contentType: "text/plain",
+			});
+			const response = await this.client.post(
+				`/api/v2/add_bdd/${sectionId}`,
+				form,
+				{ headers: form.getHeaders() },
+			);
+			return response.data;
+		} catch (error) {
+			throw handleApiError(
+				error,
+				`Failed to import BDD scenario to section ${sectionId}`,
+			);
+		}
+	}
+
+	/**
+	 * Exports a BDD test case as a .feature file (Gherkin format).
+	 * @param caseId The ID of the test case
+	 * @returns Promise with raw Gherkin .feature content as string
+	 */
+	async getBdd(caseId: number) {
+		try {
+			const response = await this.client.get(`/api/v2/get_bdd/${caseId}`);
+			return response.data;
+		} catch (error) {
+			throw handleApiError(
+				error,
+				`Failed to export BDD scenario for case ${caseId}`,
+			);
+		}
+	}
 }
