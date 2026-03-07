@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@modelcontextprotocol/sdk": "^1.24.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/cli": "^0.1.1",
     "axios": "^1.13.5",
     "dotenv": "^16.4.5",
