@@ -39,7 +39,7 @@
     "@playwright/cli": "^0.1.1",
     "axios": "^1.13.5",
     "dotenv": "^16.4.5",
-    "fastmcp": "^1.20.5",
+    "fastmcp": "^3.34.0",
     "form-data": "^4.0.0",
     "zod": "^3.24.2"
   },
