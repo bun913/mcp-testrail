@@ -49,10 +49,10 @@ export function registerSectionTools(
 		},
 	);
 
-	// Get all sections for a project or suite
+	// Get all sections for a project or suite (auto-paginates to return all sections)
 	server.tool(
 		"getSections",
-		"Retrieves all sections for a specified project and suite / 指定されたプロジェクトとスイートの全セクションを取得します",
+		"Retrieves all sections for a specified project and suite. Automatically paginates through all results. / 指定されたプロジェクトとスイートの全セクションを取得します。全結果を自動的にページネーションします。",
 		getSectionsSchema,
 		async ({ projectId, suiteId }) => {
 			try {
@@ -64,6 +64,7 @@ export function registerSectionTools(
 					"Sections retrieved successfully",
 					{
 						sections,
+						total: sections.length,
 					},
 				);
 				return {

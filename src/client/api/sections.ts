@@ -29,7 +29,10 @@ export class SectionsClient extends BaseTestRailClient {
 	}
 
 	/**
-	 * Get all sections for a project
+	 * Get all sections for a project with automatic pagination.
+	 * The TestRail API returns at most 250 sections per request.
+	 * This method automatically fetches all pages and returns the
+	 * complete list of sections.
 	 */
 	async getSections(
 		projectId: GetSectionsInputType["projectId"],
@@ -39,12 +42,35 @@ export class SectionsClient extends BaseTestRailClient {
 		try {
 			console.log(`Getting sections for project ${projectId}`);
 			const url = `/api/v2/get_sections/${projectId}`;
-			const queryParams = suiteId ? { ...params, suite_id: suiteId } : params;
+			const baseParams = suiteId
+				? { ...params, suite_id: suiteId }
+				: params;
 
-			const response = await this.client.get<TestRailSection[]>(url, {
-				params: queryParams,
-			});
-			return response.data;
+			const allSections: TestRailSection[] = [];
+			let offset = 0;
+			const limit = 250;
+
+			// eslint-disable-next-line no-constant-condition
+			while (true) {
+				const queryParams = { ...baseParams, limit, offset };
+				const response = await this.client.get<{
+					offset: number;
+					limit: number;
+					size: number;
+					_links: { next: string | null; prev: string | null };
+					sections: TestRailSection[];
+				}>(url, { params: queryParams });
+
+				const page = response.data;
+				allSections.push(...page.sections);
+
+				if (page._links.next === null) {
+					break;
+				}
+				offset += limit;
+			}
+
+			return allSections;
 		} catch (error) {
 			throw handleApiError(
 				error,
