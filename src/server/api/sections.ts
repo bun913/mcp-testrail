@@ -49,21 +49,30 @@ export function registerSectionTools(
 		},
 	);
 
-	// Get all sections for a project or suite
+	// Get sections for a project or suite with pagination
 	server.tool(
 		"getSections",
-		"Retrieves all sections for a specified project and suite / 指定されたプロジェクトとスイートの全セクションを取得します",
+		"Retrieves sections for a specified project and suite. Supports pagination via limit and offset parameters (default: limit=250, offset=0). Use _links.next to determine if more pages are available. / 指定されたプロジェクトとスイートのセクションを取得します。limitとoffsetパラメータでページネーションをサポートします。",
 		getSectionsSchema,
-		async ({ projectId, suiteId }) => {
+		async ({ projectId, suiteId, limit, offset }) => {
 			try {
-				const sections = await testRailClient.sections.getSections(
+				const params: { limit?: number; offset?: number } = {};
+				if (limit !== undefined) params.limit = limit;
+				if (offset !== undefined) params.offset = offset;
+
+				const result = await testRailClient.sections.getSections(
 					projectId,
 					suiteId,
+					params,
 				);
 				const successResponse = createSuccessResponse(
 					"Sections retrieved successfully",
 					{
-						sections,
+						sections: result.sections,
+						offset: result.offset,
+						limit: result.limit,
+						size: result.size,
+						_links: result._links,
 					},
 				);
 				return {
