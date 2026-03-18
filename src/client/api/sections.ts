@@ -18,7 +18,6 @@ export class SectionsClient extends BaseTestRailClient {
 		sectionId: GetSectionInputType["sectionId"],
 	): Promise<TestRailSection> {
 		try {
-			console.log(`Getting section ${sectionId}`);
 			const response = await this.client.get<TestRailSection>(
 				`/api/v2/get_section/${sectionId}`,
 			);
@@ -48,7 +47,6 @@ export class SectionsClient extends BaseTestRailClient {
 		_links: { next: string | null; prev: string | null };
 	}> {
 		try {
-			console.log(`Getting sections for project ${projectId}`);
 			const url = `/api/v2/get_sections/${projectId}`;
 			const defaultParams = {
 				limit: 250,
@@ -89,7 +87,6 @@ export class SectionsClient extends BaseTestRailClient {
 		},
 	): Promise<TestRailSection> {
 		try {
-			console.log(`Adding section to project ${projectId}`);
 			const response = await this.client.post<TestRailSection>(
 				`/api/v2/add_section/${projectId}`,
 				data,
@@ -114,7 +111,6 @@ export class SectionsClient extends BaseTestRailClient {
 		},
 	): Promise<TestRailSection> {
 		try {
-			console.log(`Moving section ${sectionId}`);
 			const response = await this.client.post<TestRailSection>(
 				`/api/v2/move_section/${sectionId}`,
 				data,
@@ -136,7 +132,6 @@ export class SectionsClient extends BaseTestRailClient {
 		},
 	): Promise<TestRailSection> {
 		try {
-			console.log(`Updating section ${sectionId}`);
 			const response = await this.client.post<TestRailSection>(
 				`/api/v2/update_section/${sectionId}`,
 				data,
@@ -155,7 +150,6 @@ export class SectionsClient extends BaseTestRailClient {
 		soft?: DeleteSectionInputType["soft"],
 	): Promise<void> {
 		try {
-			console.log(`Deleting section ${sectionId}`);
 			const url = soft
 				? `/api/v2/delete_section/${sectionId}?soft=1`
 				: `/api/v2/delete_section/${sectionId}`;
