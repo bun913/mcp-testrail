@@ -29,48 +29,45 @@ export class SectionsClient extends BaseTestRailClient {
 	}
 
 	/**
-	 * Get all sections for a project with automatic pagination.
-	 * The TestRail API returns at most 250 sections per request.
-	 * This method automatically fetches all pages and returns the
-	 * complete list of sections.
+	 * Get sections for a project with pagination support.
+	 * Returns a single page of sections along with pagination metadata,
+	 * allowing the caller to control how much data to fetch per request.
 	 */
 	async getSections(
 		projectId: GetSectionsInputType["projectId"],
 		suiteId?: GetSectionsInputType["suiteId"],
-		params?: Record<string, string | number | boolean | null | undefined>,
-	): Promise<TestRailSection[]> {
+		params?: {
+			limit?: number;
+			offset?: number;
+		},
+	): Promise<{
+		sections: TestRailSection[];
+		offset: number;
+		limit: number;
+		size: number;
+		_links: { next: string | null; prev: string | null };
+	}> {
 		try {
 			console.log(`Getting sections for project ${projectId}`);
 			const url = `/api/v2/get_sections/${projectId}`;
-			const baseParams = suiteId
-				? { ...params, suite_id: suiteId }
-				: params;
+			const defaultParams = {
+				limit: 250,
+				offset: 0,
+				...params,
+			};
+			const queryParams = suiteId
+				? { ...defaultParams, suite_id: suiteId }
+				: defaultParams;
 
-			const allSections: TestRailSection[] = [];
-			let offset = 0;
-			const limit = 250;
+			const response = await this.client.get<{
+				offset: number;
+				limit: number;
+				size: number;
+				_links: { next: string | null; prev: string | null };
+				sections: TestRailSection[];
+			}>(url, { params: queryParams });
 
-			// eslint-disable-next-line no-constant-condition
-			while (true) {
-				const queryParams = { ...baseParams, limit, offset };
-				const response = await this.client.get<{
-					offset: number;
-					limit: number;
-					size: number;
-					_links: { next: string | null; prev: string | null };
-					sections: TestRailSection[];
-				}>(url, { params: queryParams });
-
-				const page = response.data;
-				allSections.push(...page.sections);
-
-				if (page._links.next === null) {
-					break;
-				}
-				offset += limit;
-			}
-
-			return allSections;
+			return response.data;
 		} catch (error) {
 			throw handleApiError(
 				error,

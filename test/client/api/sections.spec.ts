@@ -38,8 +38,7 @@ describe('Sections API', () => {
     expect(result).toEqual(mockSection);
   });
   
-  it('retrieves all sections for a project', async () => {
-    // Mock response with paginated format
+  it('retrieves sections for a project with pagination metadata', async () => {
     const mockSections = [
       {
         id: 1,
@@ -60,81 +59,57 @@ describe('Sections API', () => {
         display_order: 2
       }
     ];
-    mockAxiosInstance.get.mockResolvedValue({
-      data: {
-        offset: 0,
-        limit: 250,
-        size: 2,
-        _links: { next: null, prev: null },
-        sections: mockSections,
-      },
-    });
+    const mockResponse = {
+      offset: 0,
+      limit: 250,
+      size: 2,
+      _links: { next: null, prev: null },
+      sections: mockSections,
+    };
+    mockAxiosInstance.get.mockResolvedValue({ data: mockResponse });
 
-    // Test method
     const result = await client.sections.getSections(1, 1);
 
-    // Verify axios get was called correctly
     expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_sections/1', { params: { suite_id: 1, limit: 250, offset: 0 } });
 
-    // Verify result
-    expect(result).toEqual(mockSections);
+    // Verify pagination metadata is returned
+    expect(result.sections).toEqual(mockSections);
+    expect(result.offset).toBe(0);
+    expect(result.limit).toBe(250);
+    expect(result.size).toBe(2);
+    expect(result._links.next).toBeNull();
   });
 
-  it('auto-paginates when there are more sections than the page limit', async () => {
-    // Mock first page
-    const page1Sections = Array.from({ length: 250 }, (_, i) => ({
-      id: i + 1,
-      name: `Section ${i + 1}`,
-      description: null,
-      suite_id: 1,
-      parent_id: null,
-      depth: 0,
-      display_order: i + 1,
-    }));
-    // Mock second page
-    const page2Sections = Array.from({ length: 50 }, (_, i) => ({
-      id: 251 + i,
-      name: `Section ${251 + i}`,
-      description: null,
-      suite_id: 1,
-      parent_id: null,
-      depth: 0,
-      display_order: 251 + i,
-    }));
+  it('passes custom limit and offset to the API', async () => {
+    const mockResponse = {
+      offset: 250,
+      limit: 100,
+      size: 50,
+      _links: { next: null, prev: '/api/v2/get_sections/1&limit=100&offset=150' },
+      sections: Array.from({ length: 50 }, (_, i) => ({
+        id: 251 + i,
+        name: `Section ${251 + i}`,
+        description: null,
+        suite_id: 1,
+        parent_id: null,
+        depth: 0,
+        display_order: 251 + i,
+      })),
+    };
+    mockAxiosInstance.get.mockResolvedValue({ data: mockResponse });
 
-    mockAxiosInstance.get
-      .mockResolvedValueOnce({
-        data: {
-          offset: 0,
-          limit: 250,
-          size: 250,
-          _links: { next: '/api/v2/get_sections/1&limit=250&offset=250', prev: null },
-          sections: page1Sections,
-        },
-      })
-      .mockResolvedValueOnce({
-        data: {
-          offset: 250,
-          limit: 250,
-          size: 50,
-          _links: { next: null, prev: '/api/v2/get_sections/1&limit=250&offset=0' },
-          sections: page2Sections,
-        },
-      });
+    const result = await client.sections.getSections(1, 1, { limit: 100, offset: 250 });
 
-    const result = await client.sections.getSections(1, 1);
+    // Verify custom pagination params are passed
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v2/get_sections/1', { params: { suite_id: 1, limit: 100, offset: 250 } });
 
-    // Verify two API calls were made with correct offsets
-    expect(mockAxiosInstance.get).toHaveBeenCalledTimes(2);
-    expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(1, '/api/v2/get_sections/1', { params: { suite_id: 1, limit: 250, offset: 0 } });
-    expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(2, '/api/v2/get_sections/1', { params: { suite_id: 1, limit: 250, offset: 250 } });
-
-    // Verify all sections are returned
-    expect(result).toHaveLength(300);
-    expect(result[0].id).toBe(1);
-    expect(result[249].id).toBe(250);
-    expect(result[250].id).toBe(251);
-    expect(result[299].id).toBe(300);
+    // Verify response includes pagination metadata for the caller to use
+    expect(result.sections).toHaveLength(50);
+    expect(result.offset).toBe(250);
+    expect(result.limit).toBe(100);
+    expect(result.size).toBe(50);
+    expect(result._links.next).toBeNull();
+    expect(result._links.prev).not.toBeNull();
   });
   
   it('creates a new section', async () => {

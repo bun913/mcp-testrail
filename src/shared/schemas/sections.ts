@@ -12,6 +12,16 @@ export const getSectionsSchema = {
 		.number()
 		.optional()
 		.describe("TestRail Suite ID (optional for single suite projects)"),
+	limit: z
+		.number()
+		.optional()
+		.describe(
+			"Maximum number of sections to return (default 250, max 250)",
+		),
+	offset: z
+		.number()
+		.optional()
+		.describe("Number of sections to skip (default 0, for pagination)"),
 };
 
 // Schema for adding a section
