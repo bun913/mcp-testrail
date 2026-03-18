@@ -9,6 +9,7 @@ import {
 	deleteTestCaseSchema,
 	getTestCaseTypesSchema,
 	getTestCaseFieldsSchema,
+	getRequiredCaseFieldsSchema,
 	copyTestCasesToSectionSchema,
 	moveTestCasesToSectionSchema,
 	getTestCaseHistorySchema,
@@ -56,11 +57,14 @@ export function registerCaseTools(
 	];
 
 	// Get a specific test case
-	server.tool(
+	server.registerTool(
 		"getCase",
-		"Retrieves complete details for a single test case including steps, expected results, and prerequisites. REQUIRED: caseId.",
 		{
-			caseId: getTestCaseSchema.shape.caseId,
+			description:
+				"Retrieves complete details for a single test case including steps, expected results, and prerequisites. REQUIRED: caseId.",
+			inputSchema: {
+				caseId: getTestCaseSchema.shape.caseId,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -91,24 +95,27 @@ export function registerCaseTools(
 	);
 
 	// Get all test cases for a project
-	server.tool(
+	server.registerTool(
 		"getCases",
-		"Retrieves test cases list with basic fields only (excludes steps/expected results for performance). REQUIRED: projectId, suiteId. OPTIONAL: createdBy, filter, limit (default 50), milestoneId, offset (default 0), priorityId, refs, sectionId, templateId, typeId, updatedBy, labelId. Use getCase for full details.",
 		{
-			projectId: getTestCasesSchema.shape.projectId,
-			suiteId: getTestCasesSchema.shape.suiteId,
-			createdBy: getTestCasesSchema.shape.createdBy,
-			filter: getTestCasesSchema.shape.filter,
-			limit: getTestCasesSchema.shape.limit,
-			milestoneId: getTestCasesSchema.shape.milestoneId,
-			offset: getTestCasesSchema.shape.offset,
-			priorityId: getTestCasesSchema.shape.priorityId,
-			refs: getTestCasesSchema.shape.refs,
-			sectionId: getTestCasesSchema.shape.sectionId,
-			templateId: getTestCasesSchema.shape.templateId,
-			typeId: getTestCasesSchema.shape.typeId,
-			updatedBy: getTestCasesSchema.shape.updatedBy,
-			labelId: getTestCasesSchema.shape.labelId,
+			description:
+				"Retrieves test cases list with basic fields only (excludes steps/expected results for performance). REQUIRED: projectId, suiteId. OPTIONAL: createdBy, filter, limit (default 50), milestoneId, offset (default 0), priorityId, refs, sectionId, templateId, typeId, updatedBy, labelId. Use getCase for full details.",
+			inputSchema: {
+				projectId: getTestCasesSchema.shape.projectId,
+				suiteId: getTestCasesSchema.shape.suiteId,
+				createdBy: getTestCasesSchema.shape.createdBy,
+				filter: getTestCasesSchema.shape.filter,
+				limit: getTestCasesSchema.shape.limit,
+				milestoneId: getTestCasesSchema.shape.milestoneId,
+				offset: getTestCasesSchema.shape.offset,
+				priorityId: getTestCasesSchema.shape.priorityId,
+				refs: getTestCasesSchema.shape.refs,
+				sectionId: getTestCasesSchema.shape.sectionId,
+				templateId: getTestCasesSchema.shape.templateId,
+				typeId: getTestCasesSchema.shape.typeId,
+				updatedBy: getTestCasesSchema.shape.updatedBy,
+				labelId: getTestCasesSchema.shape.labelId,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -200,23 +207,26 @@ export function registerCaseTools(
 	);
 
 	// Add a new test case
-	server.tool(
+	server.registerTool(
 		"addCase",
-		"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Use getCaseTypes to find valid typeId values. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
 		{
-			sectionId: addTestCaseSchema.shape.sectionId,
-			title: addTestCaseSchema.shape.title,
-			typeId: addTestCaseSchema.shape.typeId,
-			priorityId: addTestCaseSchema.shape.priorityId,
-			estimate: addTestCaseSchema.shape.estimate,
-			milestoneId: addTestCaseSchema.shape.milestoneId,
-			refs: addTestCaseSchema.shape.refs,
-			templateId: addTestCaseSchema.shape.templateId,
-			customPrerequisites: addTestCaseSchema.shape.customPrerequisites,
-			customSteps: addTestCaseSchema.shape.customSteps,
-			customExpected: addTestCaseSchema.shape.customExpected,
-			customStepsSeparated: addTestCaseSchema.shape.customStepsSeparated,
-			customFields: addTestCaseSchema.shape.customFields,
+			description:
+				"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. If you get HTTP 400, required custom fields are likely missing: call getCaseFields or getRequiredCaseFields to list them, then pass values in customFields (e.g. { custom_automation_type: 'value' }). Use getCaseTypes for valid typeId. templateId=2 is required for customStepsSeparated.",
+			inputSchema: {
+				sectionId: addTestCaseSchema.shape.sectionId,
+				title: addTestCaseSchema.shape.title,
+				typeId: addTestCaseSchema.shape.typeId,
+				priorityId: addTestCaseSchema.shape.priorityId,
+				estimate: addTestCaseSchema.shape.estimate,
+				milestoneId: addTestCaseSchema.shape.milestoneId,
+				refs: addTestCaseSchema.shape.refs,
+				templateId: addTestCaseSchema.shape.templateId,
+				customPrerequisites: addTestCaseSchema.shape.customPrerequisites,
+				customSteps: addTestCaseSchema.shape.customSteps,
+				customExpected: addTestCaseSchema.shape.customExpected,
+				customStepsSeparated: addTestCaseSchema.shape.customStepsSeparated,
+				customFields: addTestCaseSchema.shape.customFields,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -326,23 +336,26 @@ export function registerCaseTools(
 	);
 
 	// Update an existing test case
-	server.tool(
+	server.registerTool(
 		"updateCase",
-		"Updates an existing test case. REQUIRED: caseId. OPTIONAL: title, typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Only specified fields will be updated. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
 		{
-			caseId: updateTestCaseSchema.shape.caseId,
-			title: updateTestCaseSchema.shape.title,
-			typeId: updateTestCaseSchema.shape.typeId,
-			priorityId: updateTestCaseSchema.shape.priorityId,
-			estimate: updateTestCaseSchema.shape.estimate,
-			milestoneId: updateTestCaseSchema.shape.milestoneId,
-			refs: updateTestCaseSchema.shape.refs,
-			templateId: updateTestCaseSchema.shape.templateId,
-			customPrerequisites: updateTestCaseSchema.shape.customPrerequisites,
-			customSteps: updateTestCaseSchema.shape.customSteps,
-			customExpected: updateTestCaseSchema.shape.customExpected,
-			customStepsSeparated: updateTestCaseSchema.shape.customStepsSeparated,
-			customFields: updateTestCaseSchema.shape.customFields,
+			description:
+				"Updates an existing test case. REQUIRED: caseId. OPTIONAL: title, typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Only specified fields will be updated. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
+			inputSchema: {
+				caseId: updateTestCaseSchema.shape.caseId,
+				title: updateTestCaseSchema.shape.title,
+				typeId: updateTestCaseSchema.shape.typeId,
+				priorityId: updateTestCaseSchema.shape.priorityId,
+				estimate: updateTestCaseSchema.shape.estimate,
+				milestoneId: updateTestCaseSchema.shape.milestoneId,
+				refs: updateTestCaseSchema.shape.refs,
+				templateId: updateTestCaseSchema.shape.templateId,
+				customPrerequisites: updateTestCaseSchema.shape.customPrerequisites,
+				customSteps: updateTestCaseSchema.shape.customSteps,
+				customExpected: updateTestCaseSchema.shape.customExpected,
+				customStepsSeparated: updateTestCaseSchema.shape.customStepsSeparated,
+				customFields: updateTestCaseSchema.shape.customFields,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -444,10 +457,13 @@ export function registerCaseTools(
 	);
 
 	// Delete a test case
-	server.tool(
+	server.registerTool(
 		"deleteCase",
-		"Deletes a test case from TestRail / TestRailからテストケースを削除します",
-		{ caseId: deleteTestCaseSchema.shape.caseId },
+		{
+			description:
+				"Deletes a test case from TestRail / TestRailからテストケースを削除します",
+			inputSchema: { caseId: deleteTestCaseSchema.shape.caseId },
+		},
 		async (args, extra) => {
 			try {
 				const { caseId } = args;
@@ -472,10 +488,13 @@ export function registerCaseTools(
 	);
 
 	// Get all test case types
-	server.tool(
+	server.registerTool(
 		"getCaseTypes",
-		"Retrieves all available test case types in TestRail / TestRailで利用可能な全テストケースタイプを取得します",
-		{},
+		{
+			description:
+				"Retrieves all available test case types in TestRail / TestRailで利用可能な全テストケースタイプを取得します",
+			inputSchema: {},
+		},
 		async (args, extra) => {
 			try {
 				const caseTypes = await testRailClient.cases.getCaseTypes();
@@ -502,10 +521,13 @@ export function registerCaseTools(
 	);
 
 	// Get all test case fields
-	server.tool(
+	server.registerTool(
 		"getCaseFields",
-		"Retrieves all available test case fields in TestRail / TestRailで利用可能な全テストケースフィールドを取得します",
-		{},
+		{
+			description:
+				"Retrieves all case fields (standard + custom) in TestRail. Use before addCase to avoid HTTP 400: response includes configs[].options.is_required so you can see which custom fields are mandatory. Pass required custom field values in addCase's customFields (e.g. { custom_automation_type: 'value' }).",
+			inputSchema: {},
+		},
 		async (args, extra) => {
 			try {
 				const caseFields = await testRailClient.cases.getCaseFields();
@@ -531,13 +553,79 @@ export function registerCaseTools(
 		},
 	);
 
-	// Copy test cases to section
-	server.tool(
-		"copyToSection",
-		"Copies specified test cases to a target section while keeping the originals / 指定されたテストケースを対象のセクションにコピーし、元のケースは保持します",
+	// Get only required case fields (for addCase / updateCase)
+	server.registerTool(
+		"getRequiredCaseFields",
 		{
-			caseIds: copyTestCasesToSectionSchema.shape.caseIds,
-			sectionId: copyTestCasesToSectionSchema.shape.sectionId,
+			description:
+				"Returns only case fields that are required when creating/updating test cases. Call this before addCase or updateCase to avoid HTTP 400 from missing required custom fields. Optional projectId filters to fields required in that project; omit for all required fields. Use the returned system_name as keys in addCase/updateCase customFields (e.g. custom_automation_type).",
+			inputSchema: {
+				projectId: getRequiredCaseFieldsSchema.shape.projectId,
+			},
+		},
+		async (args, extra) => {
+			try {
+				const caseFields = await testRailClient.cases.getCaseFields();
+				const projectId = args.projectId;
+				const required: Array<{
+					system_name: string;
+					label: string;
+					type_id: number;
+					default_value: string;
+					description: string;
+					applies_to_global: boolean;
+					project_ids: number[];
+				}> = [];
+				for (const field of caseFields) {
+					for (const config of field.configs) {
+						if (!config.options.is_required) continue;
+						const isGlobal = config.context.is_global;
+						const projectIds = config.context.project_ids ?? [];
+						if (projectId !== undefined && !isGlobal && !projectIds.includes(projectId)) {
+							continue;
+						}
+						required.push({
+							system_name: field.system_name,
+							label: field.label,
+							type_id: field.type_id,
+							default_value: config.options.default_value ?? "",
+							description: field.description ?? "",
+							applies_to_global: isGlobal,
+							project_ids: projectIds,
+						});
+						break; // one entry per field
+					}
+				}
+				const successResponse = createSuccessResponse(
+					"Required case fields retrieved successfully",
+					{ requiredCaseFields: required },
+				);
+				return {
+					content: [{ type: "text", text: JSON.stringify(successResponse) }],
+				};
+			} catch (error) {
+				const errorResponse = createErrorResponse(
+					"Error fetching required case fields",
+					error,
+				);
+				return {
+					content: [{ type: "text", text: JSON.stringify(errorResponse) }],
+					isError: true,
+				};
+			}
+		},
+	);
+
+	// Copy test cases to section
+	server.registerTool(
+		"copyToSection",
+		{
+			description:
+				"Copies specified test cases to a target section while keeping the originals / 指定されたテストケースを対象のセクションにコピーし、元のケースは保持します",
+			inputSchema: {
+				caseIds: copyTestCasesToSectionSchema.shape.caseIds,
+				sectionId: copyTestCasesToSectionSchema.shape.sectionId,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -569,12 +657,15 @@ export function registerCaseTools(
 	);
 
 	// Move test cases to section
-	server.tool(
+	server.registerTool(
 		"moveToSection",
-		"Moves specified test cases to a target section / 指定されたテストケースを対象のセクションに移動します",
 		{
-			caseIds: moveTestCasesToSectionSchema.shape.caseIds,
-			sectionId: moveTestCasesToSectionSchema.shape.sectionId,
+			description:
+				"Moves specified test cases to a target section / 指定されたテストケースを対象のセクションに移動します",
+			inputSchema: {
+				caseIds: moveTestCasesToSectionSchema.shape.caseIds,
+				sectionId: moveTestCasesToSectionSchema.shape.sectionId,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -606,10 +697,13 @@ export function registerCaseTools(
 	);
 
 	// Get test case history
-	server.tool(
+	server.registerTool(
 		"getCaseHistory",
-		"Retrieves the change history of a test case including updates to fields and custom fields / テストケースの変更履歴（フィールドとカスタムフィールドの更新を含む）を取得します",
-		{ caseId: getTestCaseHistorySchema.shape.caseId },
+		{
+			description:
+				"Retrieves the change history of a test case including updates to fields and custom fields / テストケースの変更履歴（フィールドとカスタムフィールドの更新を含む）を取得します",
+			inputSchema: { caseId: getTestCaseHistorySchema.shape.caseId },
+		},
 		async (args, extra) => {
 			try {
 				const { caseId } = args;
@@ -637,25 +731,28 @@ export function registerCaseTools(
 	);
 
 	// Update multiple test cases
-	server.tool(
+	server.registerTool(
 		"updateCases",
-		"Updates multiple test cases simultaneously with the same field values / 複数のテストケースを同じフィールド値で一括更新します. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
 		{
-			projectId: updateTestCasesSchema.shape.projectId,
-			suiteId: updateTestCasesSchema.shape.suiteId,
-			caseIds: updateTestCasesSchema.shape.caseIds,
-			title: updateTestCasesSchema.shape.title,
-			typeId: updateTestCasesSchema.shape.typeId,
-			priorityId: updateTestCasesSchema.shape.priorityId,
-			estimate: updateTestCasesSchema.shape.estimate,
-			milestoneId: updateTestCasesSchema.shape.milestoneId,
-			refs: updateTestCasesSchema.shape.refs,
-			templateId: updateTestCasesSchema.shape.templateId,
-			customPrerequisites: updateTestCasesSchema.shape.customPrerequisites,
-			customSteps: updateTestCasesSchema.shape.customSteps,
-			customExpected: updateTestCasesSchema.shape.customExpected,
-			customStepsSeparated: updateTestCasesSchema.shape.customStepsSeparated,
-			customFields: updateTestCasesSchema.shape.customFields,
+			description:
+				"Updates multiple test cases simultaneously with the same field values / 複数のテストケースを同じフィールド値で一括更新します. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
+			inputSchema: {
+				projectId: updateTestCasesSchema.shape.projectId,
+				suiteId: updateTestCasesSchema.shape.suiteId,
+				caseIds: updateTestCasesSchema.shape.caseIds,
+				title: updateTestCasesSchema.shape.title,
+				typeId: updateTestCasesSchema.shape.typeId,
+				priorityId: updateTestCasesSchema.shape.priorityId,
+				estimate: updateTestCasesSchema.shape.estimate,
+				milestoneId: updateTestCasesSchema.shape.milestoneId,
+				refs: updateTestCasesSchema.shape.refs,
+				templateId: updateTestCasesSchema.shape.templateId,
+				customPrerequisites: updateTestCasesSchema.shape.customPrerequisites,
+				customSteps: updateTestCasesSchema.shape.customSteps,
+				customExpected: updateTestCasesSchema.shape.customExpected,
+				customStepsSeparated: updateTestCasesSchema.shape.customStepsSeparated,
+				customFields: updateTestCasesSchema.shape.customFields,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -770,12 +867,15 @@ export function registerCaseTools(
 	);
 
 	// Import a BDD .feature file into a section
-	server.tool(
+	server.registerTool(
 		"addBdd",
-		"Imports/uploads a .feature file (Gherkin BDD scenario) into a TestRail section. Creates a new test case with BDD template (template_id=4) and populates the custom_testrail_bdd_scenario field. REQUIRED: sectionId, featureContent (raw Gherkin text including Feature:, Scenario:, Given/When/Then).",
 		{
-			sectionId: addBddSchema.shape.sectionId,
-			featureContent: addBddSchema.shape.featureContent,
+			description:
+				"Imports/uploads a .feature file (Gherkin BDD scenario) into a TestRail section. Creates a new test case with BDD template (template_id=4) and populates the custom_testrail_bdd_scenario field. REQUIRED: sectionId, featureContent (raw Gherkin text including Feature:, Scenario:, Given/When/Then).",
+			inputSchema: {
+				sectionId: addBddSchema.shape.sectionId,
+				featureContent: addBddSchema.shape.featureContent,
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -805,11 +905,14 @@ export function registerCaseTools(
 	);
 
 	// Export a BDD test case as .feature file
-	server.tool(
+	server.registerTool(
 		"getBdd",
-		"Exports a BDD test case as a .feature file in Gherkin format. REQUIRED: caseId.",
 		{
-			caseId: getBddSchema.shape.caseId,
+			description:
+				"Exports a BDD test case as a .feature file in Gherkin format. REQUIRED: caseId.",
+			inputSchema: {
+				caseId: getBddSchema.shape.caseId,
+			},
 		},
 		async (args, extra) => {
 			try {

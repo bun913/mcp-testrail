@@ -154,6 +154,16 @@ export const getTestCaseTypesSchema = z.object({});
 // Schema for retrieving test case fields
 export const getTestCaseFieldsSchema = z.object({});
 
+// Schema for retrieving required case fields only (for addCase/updateCase)
+export const getRequiredCaseFieldsSchema = z.object({
+	projectId: z
+		.number()
+		.optional()
+		.describe(
+			"Optional TestRail Project ID to filter required fields to that project's context",
+		),
+});
+
 // Schema for copying test cases to a section
 export const copyTestCasesToSectionSchema = z.object({
 	caseIds: z.array(z.number()).describe("Array of TestRail Case IDs"),
@@ -216,6 +226,7 @@ export const updateTestCaseInputSchema = updateTestCaseSchema;
 export const deleteTestCaseInputSchema = deleteTestCaseSchema;
 export const getTestCaseTypesInputSchema = getTestCaseTypesSchema;
 export const getTestCaseFieldsInputSchema = getTestCaseFieldsSchema;
+export const getRequiredCaseFieldsInputSchema = getRequiredCaseFieldsSchema;
 export const copyTestCasesToSectionInputSchema = copyTestCasesToSectionSchema;
 export const moveTestCasesToSectionInputSchema = moveTestCasesToSectionSchema;
 export const getTestCaseHistoryInputSchema = getTestCaseHistorySchema;
@@ -230,6 +241,9 @@ export type DeleteTestCaseInput = z.infer<typeof deleteTestCaseInputSchema>;
 export type GetTestCaseTypesInput = z.infer<typeof getTestCaseTypesInputSchema>;
 export type GetTestCaseFieldsInput = z.infer<
 	typeof getTestCaseFieldsInputSchema
+>;
+export type GetRequiredCaseFieldsInput = z.infer<
+	typeof getRequiredCaseFieldsInputSchema
 >;
 export type CopyTestCasesToSectionInput = z.infer<
 	typeof copyTestCasesToSectionInputSchema
@@ -300,14 +314,14 @@ export const TestRailCaseFieldConfigSchema = z.object({
 	id: z.string(),
 	context: z.object({
 		is_global: z.boolean(),
-		project_ids: z.array(z.number()),
+		project_ids: z.array(z.number()).nullable().optional(),
 	}),
 	options: z.object({
-		default_value: z.string(),
-		format: z.string(),
+		default_value: z.string().optional(),
+		format: z.string().optional(),
 		is_required: z.boolean(),
-		rows: z.string(),
-		items: z.string(),
+		rows: z.string().optional(),
+		items: z.string().optional(),
 	}),
 });
 export type TestRailCaseFieldConfig = z.infer<
