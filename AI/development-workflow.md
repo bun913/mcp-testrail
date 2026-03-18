@@ -52,8 +52,46 @@ npm run debug
 
 This command:
 - Launches MCP Inspector (ports 6274/6277)
-- Runs `dist/server/server.js` in debug mode
+- Spawns the **stdio** server (`dist/stdio.js`) so the Inspector can bridge stdin/stdout
 - Provides browser-based debugging UI
+
+#### Using the Inspector (avoid "Connection Error")
+
+1. **Env vars**  
+   The spawned server needs TestRail credentials. From the project root, either:
+   - Use a `.env` with `TESTRAIL_URL`, `TESTRAIL_USERNAME`, `TESTRAIL_API_KEY`, and run `npm run debug` from the same shell, or  
+   - Export them before running:  
+     `export TESTRAIL_URL=... TESTRAIL_USERNAME=... TESTRAIL_API_KEY=... && npm run debug`
+
+2. **Build first**  
+   Run `npm run build` so `dist/stdio.js` exists.
+
+3. **Use the URL with token**  
+   When the Inspector starts, the **terminal** prints a line like:  
+   `http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=abc123...`  
+   Open that **full URL** in the browser (or refresh the Inspector tab with that URL). If you use only `http://localhost:6274`, the "Connect" step can fail with "proxy token is correct".
+
+4. **Connect**  
+   In the Inspector page, choose the **stdio** transport (if asked) and click **Connect**. The server is already running as a subprocess; Connect links the browser client to it.
+
+#### Viewing logs (case tools / template fields)
+
+To see what the MCP server sends to TestRail for add/update case (e.g. templateId and step fields), enable debug logging:
+
+```bash
+# In the same environment where the MCP server runs:
+export MCP_TESTRAIL_DEBUG=1
+# Then start the server (e.g. npm run debug, or restart Cursor's MCP)
+```
+
+When `MCP_TESTRAIL_DEBUG=1` (or `true`), the server logs to **stderr**:
+- `buildCaseStepFields: templateId=X → step fields: ...` — which step keys were chosen for the given template
+- `addCase` / `updateCase` / `updateCases` request payload keys (step-related) — which of those keys are in the final request body
+
+**Where logs appear:**
+- **MCP Inspector** (`npm run debug`): same terminal where you ran `npm run debug` (stderr is inherited).
+- **Cursor/IDE**: MCP server runs in a child process; check **Output** panel → select the channel for your MCP server (e.g. "MCP" or "TestRail"), or the terminal tab where you started the server if you run it manually.
+- **Manual stdio**: `MCP_TESTRAIL_DEBUG=1 npm run start:stdio` — logs go to the same terminal.
 
 ## Project Structure
 

@@ -18,7 +18,100 @@ import {
 	TestRailCaseSchema,
 	addBddSchema,
 	getBddSchema,
+	TestRailCaseField,
 } from "../../shared/schemas/cases.js";
+
+/**
+ * Resolves required custom fields for the section's project and merges defaults for any
+ * missing required field so a single addCase API call can succeed without 400 retries.
+ */
+async function mergeRequiredCustomFields(
+	client: TestRailClient,
+	sectionId: number,
+	customFields: Record<string, unknown> | undefined,
+): Promise<Record<string, unknown>> {
+	const section = await client.sections.getSection(sectionId);
+	const suite = await client.suites.getSuite(section.suite_id);
+	const projectId = suite.project_id;
+	const caseFields = await client.cases.getCaseFields();
+
+	const merged: Record<string, unknown> = {};
+
+	for (const field of caseFields as TestRailCaseField[]) {
+		for (const config of field.configs) {
+			if (!config.options.is_required) continue;
+			const isGlobal = config.context.is_global;
+			const projectIds = config.context.project_ids ?? [];
+			if (!isGlobal && !projectIds.includes(projectId)) continue;
+
+			const key = field.system_name;
+			const existing = customFields?.[key];
+			if (existing !== undefined && existing !== null && existing !== "") {
+				merged[key] = existing;
+				break;
+			}
+			const defaultValue = config.options.default_value;
+			if (defaultValue !== undefined && defaultValue !== "") {
+				// TestRail dropdown/select fields often expect number; coerce if numeric string
+				const num = Number(defaultValue);
+				merged[key] = Number.isNaN(num) ? defaultValue : num;
+			}
+			break;
+		}
+	}
+
+	// User-provided customFields override merged defaults
+	return { ...merged, ...customFields };
+}
+
+const DEBUG_CASES = process.env.MCP_TESTRAIL_DEBUG === "1" || process.env.MCP_TESTRAIL_DEBUG === "true";
+
+/** Template 1 = custom_steps + custom_expected; Template 2 = custom_steps_separated. Only send fields valid for the given template so TestRail does not ignore them. */
+function buildCaseStepFields(opts: {
+	templateId?: number;
+	customPrerequisites?: string;
+	customSteps?: string;
+	customExpected?: string;
+	customStepsSeparated?: Array<{ content: string; expected?: string }>;
+}): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	if (opts.customPrerequisites) {
+		out.custom_preconds = opts.customPrerequisites;
+	}
+	const templateId = opts.templateId;
+	if (templateId === 2) {
+		if (opts.customStepsSeparated) {
+			out.custom_steps_separated = opts.customStepsSeparated;
+		}
+		// Do not send custom_steps or custom_expected for template 2 — TestRail ignores them
+	} else if (templateId === 1) {
+		if (opts.customSteps) out.custom_steps = opts.customSteps;
+		if (opts.customExpected) out.custom_expected = opts.customExpected;
+		// Do not send custom_steps_separated for template 1 — TestRail ignores it
+	} else {
+		// templateId not set: backward-compatible, send whatever is provided
+		if (opts.customSteps) out.custom_steps = opts.customSteps;
+		if (opts.customExpected) out.custom_expected = opts.customExpected;
+		if (opts.customStepsSeparated) {
+			out.custom_steps_separated = opts.customStepsSeparated;
+		}
+	}
+	if (DEBUG_CASES) {
+		const stepKeys = Object.keys(out).filter(
+			(k) =>
+				k === "custom_preconds" ||
+				k === "custom_steps" ||
+				k === "custom_expected" ||
+				k === "custom_steps_separated",
+		);
+		console.error(
+			"[MCP TestRail] buildCaseStepFields: templateId=%s → step fields: %s",
+			templateId ?? "(none)",
+			stepKeys.join(", ") || "(none)",
+		);
+	}
+	return out;
+}
 
 /**
  * Function to register test case-related API tools
@@ -211,7 +304,7 @@ export function registerCaseTools(
 		"addCase",
 		{
 			description:
-				"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. If you get HTTP 400, required custom fields are likely missing: call getCaseFields or getRequiredCaseFields to list them, then pass values in customFields (e.g. { custom_automation_type: 'value' }). Use getCaseTypes for valid typeId. templateId=2 is required for customStepsSeparated.",
+				"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Required custom fields for the section's project are auto-filled with their defaults when missing, so one addCase call is enough. Override via customFields (e.g. { custom_automation_type: 1 }). Use getCaseTypes for valid typeId. templateId=2 is required for customStepsSeparated.",
 			inputSchema: {
 				sectionId: addTestCaseSchema.shape.sectionId,
 				title: addTestCaseSchema.shape.title,
@@ -245,6 +338,12 @@ export function registerCaseTools(
 					customStepsSeparated,
 					customFields,
 				} = args;
+				// Resolve required custom fields with defaults so one API call succeeds
+				const mergedCustomFields = await mergeRequiredCustomFields(
+					testRailClient,
+					sectionId,
+					customFields,
+				);
 				// Build test case data
 				const data: Record<string, unknown> = {};
 
@@ -283,23 +382,21 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
-				// Add custom fields if specified
-				if (customPrerequisites) {
-					data.custom_preconds = customPrerequisites;
-				}
-				if (customSteps) {
-					data.custom_steps = customSteps;
-				}
-				if (customExpected) {
-					data.custom_expected = customExpected;
-				}
-				if (customStepsSeparated) {
-					data.custom_steps_separated = customStepsSeparated;
-				}
+				// Add step/expected fields according to template (template 1: custom_steps/custom_expected; template 2: custom_steps_separated)
+				Object.assign(
+					data,
+					buildCaseStepFields({
+						templateId,
+						customPrerequisites,
+						customSteps,
+						customExpected,
+						customStepsSeparated,
+					}),
+				);
 
-				// Add additional custom fields from customFields object
-				if (customFields) {
-					for (const [key, value] of Object.entries(customFields)) {
+				// Add additional custom fields (includes required defaults when missing)
+				if (Object.keys(mergedCustomFields).length > 0) {
+					for (const [key, value] of Object.entries(mergedCustomFields)) {
 						data[key] = value;
 					}
 				}
@@ -310,6 +407,16 @@ export function registerCaseTools(
 					if (value === undefined || value === null || value === "") {
 						delete data[key];
 					}
+				}
+
+				if (DEBUG_CASES) {
+					const stepKeys = ["template_id", "custom_preconds", "custom_steps", "custom_expected", "custom_steps_separated"].filter(
+						(k) => data[k] !== undefined,
+					);
+					console.error(
+						"[MCP TestRail] addCase request payload keys (step-related): %s",
+						stepKeys.join(", ") || "(none)",
+					);
 				}
 
 				const testCase = await testRailClient.cases.addCase(sectionId, data);
@@ -412,25 +519,33 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
-				// Add custom fields if specified
-				if (customPrerequisites) {
-					data.custom_preconds = customPrerequisites;
-				}
-				if (customSteps) {
-					data.custom_steps = customSteps;
-				}
-				if (customExpected) {
-					data.custom_expected = customExpected;
-				}
-				if (customStepsSeparated) {
-					data.custom_steps_separated = customStepsSeparated;
-				}
+				// Add step/expected fields according to template (template 1: custom_steps/custom_expected; template 2: custom_steps_separated)
+				Object.assign(
+					data,
+					buildCaseStepFields({
+						templateId,
+						customPrerequisites,
+						customSteps,
+						customExpected,
+						customStepsSeparated,
+					}),
+				);
 
 				// Add additional custom fields from customFields object
 				if (customFields) {
 					for (const [key, value] of Object.entries(customFields)) {
 						data[key] = value;
 					}
+				}
+
+				if (DEBUG_CASES) {
+					const stepKeys = ["template_id", "custom_preconds", "custom_steps", "custom_expected", "custom_steps_separated"].filter(
+						(k) => data[k] !== undefined,
+					);
+					console.error(
+						"[MCP TestRail] updateCase request payload keys (step-related): %s",
+						stepKeys.join(", ") || "(none)",
+					);
 				}
 
 				const testCase = await testRailClient.cases.updateCase(caseId, data);
@@ -812,19 +927,17 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
-				// Add custom fields if specified
-				if (customPrerequisites) {
-					data.custom_preconds = customPrerequisites;
-				}
-				if (customSteps) {
-					data.custom_steps = customSteps;
-				}
-				if (customExpected) {
-					data.custom_expected = customExpected;
-				}
-				if (customStepsSeparated) {
-					data.custom_steps_separated = customStepsSeparated;
-				}
+				// Add step/expected fields according to template (template 1: custom_steps/custom_expected; template 2: custom_steps_separated)
+				Object.assign(
+					data,
+					buildCaseStepFields({
+						templateId,
+						customPrerequisites,
+						customSteps,
+						customExpected,
+						customStepsSeparated,
+					}),
+				);
 
 				// Add additional custom fields from customFields object
 				if (customFields) {
@@ -839,6 +952,16 @@ export function registerCaseTools(
 					if (value === undefined || value === null || value === "") {
 						delete data[key];
 					}
+				}
+
+				if (DEBUG_CASES) {
+					const stepKeys = ["template_id", "custom_preconds", "custom_steps", "custom_expected", "custom_steps_separated"].filter(
+						(k) => data[k] !== undefined,
+					);
+					console.error(
+						"[MCP TestRail] updateCases request payload keys (step-related): %s",
+						stepKeys.join(", ") || "(none)",
+					);
 				}
 
 				await testRailClient.cases.updateCases(

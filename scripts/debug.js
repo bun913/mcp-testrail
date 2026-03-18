@@ -7,17 +7,18 @@ import { dirname, resolve } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const serverPath = resolve(__dirname, '../dist/server/server.js');
+// Inspector talks to the server via stdio; must run the stdio entry point, not the SSE server
+const stdioPath = resolve(__dirname, '../dist/stdio.js');
 
 // Environment variables for the MCP Inspector
 process.env.CLIENT_PORT = process.env.CLIENT_PORT || '6274';
 process.env.SERVER_PORT = process.env.SERVER_PORT || '6277';
 
-// Launch the MCP Inspector with our server
+// Launch the MCP Inspector with our stdio server (same as production: node dist/stdio.js)
 const inspector = spawn('npx', [
   '@modelcontextprotocol/inspector',
   'node',
-  serverPath,
+  stdioPath,
 ], {
   stdio: 'inherit',
   env: {
