@@ -14,24 +14,27 @@ export function registerTestTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get a specific test case
-	server.tool(
+	server.registerTool(
 		"getTests",
-		"Retrieves a list of tests for a test run / テスト実行に含まれるテスト一覧を取得します",
 		{
-			runId: getTestsSchema.shape.runId,
-			limit: z
-				.number()
-				.min(1)
-				.optional()
-				.default(50)
-				.describe(
-					"Number of tests to return per page. If you cannot get all tests, try separating the request into multiple calls",
-				),
-			offset: z
-				.number()
-				.optional()
-				.default(0)
-				.describe("Offset for pagination"),
+			description:
+				"Retrieves a list of tests for a test run / テスト実行に含まれるテスト一覧を取得します",
+			inputSchema: {
+				runId: getTestsSchema.shape.runId,
+				limit: z
+					.number()
+					.min(1)
+					.optional()
+					.default(50)
+					.describe(
+						"Number of tests to return per page. If you cannot get all tests, try separating the request into multiple calls",
+					),
+				offset: z
+					.number()
+					.optional()
+					.default(0)
+					.describe("Offset for pagination"),
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -62,11 +65,14 @@ export function registerTestTools(
 	);
 
 	// Get a specific test case
-	server.tool(
+	server.registerTool(
 		"getTest",
-		"Retrieves complete details for a single test, including all fields such as status, type, and results / 単一のテストの完全な詳細（ステータス、タイプ、結果などのすべてのフィールドを含む）を取得します",
 		{
-			testId: getTestSchema.shape.testId,
+			description:
+				"Retrieves complete details for a single test, including all fields such as status, type, and results / 単一のテストの完全な詳細（ステータス、タイプ、結果などのすべてのフィールドを含む）を取得します",
+			inputSchema: {
+				testId: getTestSchema.shape.testId,
+			},
 		},
 		async (args, extra) => {
 			try {

@@ -13,10 +13,13 @@ export function registerMilestoneTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get all milestones for a project
-	server.tool(
+	server.registerTool(
 		"getMilestones",
-		"Retrieves all milestones for a specified TestRail project / 指定されたTestRailプロジェクトの全マイルストーンを取得します",
-		getMilestonesSchema,
+		{
+			description:
+				"Retrieves all milestones for a specified TestRail project / 指定されたTestRailプロジェクトの全マイルストーンを取得します",
+			inputSchema: getMilestonesSchema,
+		},
 		async ({ projectId }) => {
 			try {
 				const milestones =

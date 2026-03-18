@@ -18,10 +18,13 @@ export function registerPlanTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get all test plans for a project
-	server.tool(
+	server.registerTool(
 		"getPlans",
-		"Retrieves all test plans for a specified TestRail project / 指定されたTestRailプロジェクトの全テストプランを取得します",
-		getPlansSchema,
+		{
+			description:
+				"Retrieves all test plans for a specified TestRail project / 指定されたTestRailプロジェクトの全テストプランを取得します",
+			inputSchema: getPlansSchema,
+		},
 		async ({ projectId }) => {
 			try {
 				const plans = await testRailClient.plans.getPlans(projectId);
@@ -48,15 +51,18 @@ export function registerPlanTools(
 	);
 
 	// Add a new test plan
-	server.tool(
+	server.registerTool(
 		"addPlan",
-		"Creates a new test plan in a TestRail project / TestRailプロジェクトに新しいテストプランを作成します",
 		{
-			projectId: addPlanSchema.shape.projectId,
-			name: addPlanSchema.shape.name,
-			description: addPlanSchema.shape.description,
-			milestoneId: addPlanSchema.shape.milestoneId,
-			entries: addPlanSchema.shape.entries,
+			description:
+				"Creates a new test plan in a TestRail project / TestRailプロジェクトに新しいテストプランを作成します",
+			inputSchema: {
+				projectId: addPlanSchema.shape.projectId,
+				name: addPlanSchema.shape.name,
+				description: addPlanSchema.shape.description,
+				milestoneId: addPlanSchema.shape.milestoneId,
+				entries: addPlanSchema.shape.entries,
+			},
 		},
 		async (args) => {
 			try {
@@ -85,20 +91,23 @@ export function registerPlanTools(
 	);
 
 	// Add a plan entry
-	server.tool(
+	server.registerTool(
 		"addPlanEntry",
-		"Adds a new test plan entry to an existing test plan / 既存のテストプランに新しいテストプランエントリーを追加します",
 		{
-			planId: addPlanEntrySchema.shape.planId,
-			suiteId: addPlanEntrySchema.shape.suiteId,
-			name: addPlanEntrySchema.shape.name,
-			description: addPlanEntrySchema.shape.description,
-			assignedtoId: addPlanEntrySchema.shape.assignedtoId,
-			includeAll: addPlanEntrySchema.shape.includeAll,
-			caseIds: addPlanEntrySchema.shape.caseIds,
-			configIds: addPlanEntrySchema.shape.configIds,
-			refs: addPlanEntrySchema.shape.refs,
-			runs: addPlanEntrySchema.shape.runs,
+			description:
+				"Adds a new test plan entry to an existing test plan / 既存のテストプランに新しいテストプランエントリーを追加します",
+			inputSchema: {
+				planId: addPlanEntrySchema.shape.planId,
+				suiteId: addPlanEntrySchema.shape.suiteId,
+				name: addPlanEntrySchema.shape.name,
+				description: addPlanEntrySchema.shape.description,
+				assignedtoId: addPlanEntrySchema.shape.assignedtoId,
+				includeAll: addPlanEntrySchema.shape.includeAll,
+				caseIds: addPlanEntrySchema.shape.caseIds,
+				configIds: addPlanEntrySchema.shape.configIds,
+				refs: addPlanEntrySchema.shape.refs,
+				runs: addPlanEntrySchema.shape.runs,
+			},
 		},
 		async (args) => {
 			try {
@@ -127,18 +136,21 @@ export function registerPlanTools(
 	);
 
 	// Add a run to plan entry
-	server.tool(
+	server.registerTool(
 		"addRunToPlanEntry",
-		"Adds a new test run to an existing plan entry / 既存のプランエントリーに新しいテストランを追加します",
 		{
-			planId: addRunToPlanEntrySchema.shape.planId,
-			entryId: addRunToPlanEntrySchema.shape.entryId,
-			configIds: addRunToPlanEntrySchema.shape.configIds,
-			description: addRunToPlanEntrySchema.shape.description,
-			assignedtoId: addRunToPlanEntrySchema.shape.assignedtoId,
-			includeAll: addRunToPlanEntrySchema.shape.includeAll,
-			caseIds: addRunToPlanEntrySchema.shape.caseIds,
-			refs: addRunToPlanEntrySchema.shape.refs,
+			description:
+				"Adds a new test run to an existing plan entry / 既存のプランエントリーに新しいテストランを追加します",
+			inputSchema: {
+				planId: addRunToPlanEntrySchema.shape.planId,
+				entryId: addRunToPlanEntrySchema.shape.entryId,
+				configIds: addRunToPlanEntrySchema.shape.configIds,
+				description: addRunToPlanEntrySchema.shape.description,
+				assignedtoId: addRunToPlanEntrySchema.shape.assignedtoId,
+				includeAll: addRunToPlanEntrySchema.shape.includeAll,
+				caseIds: addRunToPlanEntrySchema.shape.caseIds,
+				refs: addRunToPlanEntrySchema.shape.refs,
+			},
 		},
 		async (args) => {
 			try {

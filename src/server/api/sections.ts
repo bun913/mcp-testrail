@@ -20,10 +20,13 @@ export function registerSectionTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get a specific section
-	server.tool(
+	server.registerTool(
 		"getSection",
-		"Retrieves details of a specific section by ID / 特定のセクションの詳細をIDで取得します",
-		getSectionSchema,
+		{
+			description:
+				"Retrieves details of a specific section by ID / 特定のセクションの詳細をIDで取得します",
+			inputSchema: getSectionSchema,
+		},
 		async ({ sectionId }) => {
 			try {
 				const section = await testRailClient.sections.getSection(sectionId);
@@ -50,10 +53,13 @@ export function registerSectionTools(
 	);
 
 	// Get sections for a project or suite with pagination
-	server.tool(
+	server.registerTool(
 		"getSections",
-		"Retrieves sections for a specified project and suite. Supports pagination via limit and offset parameters (default: limit=250, offset=0). Use _links.next to determine if more pages are available. / 指定されたプロジェクトとスイートのセクションを取得します。limitとoffsetパラメータでページネーションをサポートします。",
-		getSectionsSchema,
+		{
+			description:
+				"Retrieves sections for a specified project and suite. Supports pagination via limit and offset parameters (default: limit=250, offset=0). Use _links.next to determine if more pages are available. / 指定されたプロジェクトとスイートのセクションを取得します。limitとoffsetパラメータでページネーションをサポートします。",
+			inputSchema: getSectionsSchema,
+		},
 		async ({ projectId, suiteId, limit, offset }) => {
 			try {
 				const params: { limit?: number; offset?: number } = {};
@@ -92,10 +98,13 @@ export function registerSectionTools(
 	);
 
 	// Create a new section
-	server.tool(
+	server.registerTool(
 		"addSection",
-		"Creates a new section in a TestRail project / TestRailプロジェクトに新しいセクションを作成します",
-		addSectionSchema,
+		{
+			description:
+				"Creates a new section in a TestRail project / TestRailプロジェクトに新しいセクションを作成します",
+			inputSchema: addSectionSchema,
+		},
 		async ({ projectId, name, description, suiteId, parentId }) => {
 			try {
 				const data = {
@@ -132,10 +141,13 @@ export function registerSectionTools(
 	);
 
 	// Move a section
-	server.tool(
+	server.registerTool(
 		"moveSection",
-		"Moves a section to a new position in the test hierarchy / テスト階層内の新しい位置にセクションを移動します",
-		moveSectionSchema,
+		{
+			description:
+				"Moves a section to a new position in the test hierarchy / テスト階層内の新しい位置にセクションを移動します",
+			inputSchema: moveSectionSchema,
+		},
 		async ({ sectionId, parentId, afterId }) => {
 			try {
 				const moveData: {
@@ -173,10 +185,13 @@ export function registerSectionTools(
 	);
 
 	// Update a section
-	server.tool(
+	server.registerTool(
 		"updateSection",
-		"Updates an existing section / 既存のセクションを更新します",
-		updateSectionSchema,
+		{
+			description:
+				"Updates an existing section / 既存のセクションを更新します",
+			inputSchema: updateSectionSchema,
+		},
 		async ({ sectionId, name, description }) => {
 			try {
 				const updateData: { name?: string; description?: string } = {};
@@ -210,10 +225,12 @@ export function registerSectionTools(
 	);
 
 	// Delete a section
-	server.tool(
+	server.registerTool(
 		"deleteSection",
-		"Deletes a section / セクションを削除します",
-		deleteSectionSchema,
+		{
+			description: "Deletes a section / セクションを削除します",
+			inputSchema: deleteSectionSchema,
+		},
 		async ({ sectionId, soft }) => {
 			try {
 				await testRailClient.sections.deleteSection(sectionId, soft);

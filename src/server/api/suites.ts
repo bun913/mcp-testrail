@@ -18,13 +18,16 @@ export function registerSuiteTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get all test suites for a project
-	server.tool(
+	server.registerTool(
 		"getSuites",
-		"Retrieves all test suites for a specified TestRail project / 指定されたTestRailプロジェクトの全テストスイートを取得します",
 		{
-			projectId: getSuitesSchema.shape.projectId.describe(
-				"TestRail Project ID to get suites from / スイート一覧を取得するTestRailプロジェクトID",
-			),
+			description:
+				"Retrieves all test suites for a specified TestRail project / 指定されたTestRailプロジェクトの全テストスイートを取得します",
+			inputSchema: {
+				projectId: getSuitesSchema.shape.projectId.describe(
+					"TestRail Project ID to get suites from / スイート一覧を取得するTestRailプロジェクトID",
+				),
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -53,13 +56,16 @@ export function registerSuiteTools(
 	);
 
 	// Get a specific test suite
-	server.tool(
+	server.registerTool(
 		"getSuite",
-		"Retrieves details of a specific test suite by ID / 特定のテストスイートの詳細をIDで取得します",
 		{
-			suiteId: getSuiteSchema.shape.suiteId.describe(
-				"TestRail Suite ID to retrieve / 取得するTestRailスイートID",
-			),
+			description:
+				"Retrieves details of a specific test suite by ID / 特定のテストスイートの詳細をIDで取得します",
+			inputSchema: {
+				suiteId: getSuiteSchema.shape.suiteId.describe(
+					"TestRail Suite ID to retrieve / 取得するTestRailスイートID",
+				),
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -88,19 +94,22 @@ export function registerSuiteTools(
 	);
 
 	// Create a new test suite
-	server.tool(
+	server.registerTool(
 		"addSuite",
-		"Creates a new test suite in the specified project / 指定されたプロジェクトに新しいテストスイートを作成します",
 		{
-			projectId: addSuiteSchema.shape.projectId.describe(
-				"TestRail Project ID where the suite will be created / スイートを作成するTestRailプロジェクトID",
-			),
-			name: addSuiteSchema.shape.name.describe(
-				"Name of the test suite / テストスイートの名前",
-			),
-			description: addSuiteSchema.shape.description.describe(
-				"Description of the test suite (optional) / テストスイートの説明（任意）",
-			),
+			description:
+				"Creates a new test suite in the specified project / 指定されたプロジェクトに新しいテストスイートを作成します",
+			inputSchema: {
+				projectId: addSuiteSchema.shape.projectId.describe(
+					"TestRail Project ID where the suite will be created / スイートを作成するTestRailプロジェクトID",
+				),
+				name: addSuiteSchema.shape.name.describe(
+					"Name of the test suite / テストスイートの名前",
+				),
+				description: addSuiteSchema.shape.description.describe(
+					"Description of the test suite (optional) / テストスイートの説明（任意）",
+				),
+			},
 		},
 		async (args, extra) => {
 			try {
@@ -133,19 +142,22 @@ export function registerSuiteTools(
 	);
 
 	// Update an existing test suite
-	server.tool(
+	server.registerTool(
 		"updateSuite",
-		"Updates an existing test suite / 既存のテストスイートを更新します",
 		{
-			suiteId: updateSuiteSchema.shape.suiteId.describe(
-				"TestRail Suite ID to update / 更新するTestRailスイートID",
-			),
-			name: updateSuiteSchema.shape.name.describe(
-				"New name for the test suite (optional) / テストスイートの新しい名前（任意）",
-			),
-			description: updateSuiteSchema.shape.description.describe(
-				"New description for the test suite (optional) / テストスイートの新しい説明（任意）",
-			),
+			description:
+				"Updates an existing test suite / 既存のテストスイートを更新します",
+			inputSchema: {
+				suiteId: updateSuiteSchema.shape.suiteId.describe(
+					"TestRail Suite ID to update / 更新するTestRailスイートID",
+				),
+				name: updateSuiteSchema.shape.name.describe(
+					"New name for the test suite (optional) / テストスイートの新しい名前（任意）",
+				),
+				description: updateSuiteSchema.shape.description.describe(
+					"New description for the test suite (optional) / テストスイートの新しい説明（任意）",
+				),
+			},
 		},
 		async (args, extra) => {
 			try {

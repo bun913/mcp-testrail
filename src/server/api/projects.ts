@@ -19,10 +19,13 @@ export function registerProjectTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get all projects
-	server.tool(
+	server.registerTool(
 		"getProjects",
-		"Retrieves all TestRail projects / すべてのTestRailプロジェクトを取得します",
-		{},
+		{
+			description:
+				"Retrieves all TestRail projects / すべてのTestRailプロジェクトを取得します",
+			inputSchema: {},
+		},
 		async (args, extra) => {
 			try {
 				const projects = await testRailClient.projects.getProjects();
@@ -49,13 +52,16 @@ export function registerProjectTools(
 	);
 
 	// Get a specific project by ID
-	server.tool(
+	server.registerTool(
 		"getProject",
-		"Retrieves details of a specific TestRail project by ID / 特定のTestRailプロジェクトの詳細をIDで取得します",
 		{
-			projectId: getProjectSchema.shape.projectId.describe(
-				"TestRail Project ID to retrieve / 取得するTestRailプロジェクトID",
-			),
+			description:
+				"Retrieves details of a specific TestRail project by ID / 特定のTestRailプロジェクトの詳細をIDで取得します",
+			inputSchema: {
+				projectId: getProjectSchema.shape.projectId.describe(
+					"TestRail Project ID to retrieve / 取得するTestRailプロジェクトID",
+				),
+			},
 		},
 		async (args, extra) => {
 			try {

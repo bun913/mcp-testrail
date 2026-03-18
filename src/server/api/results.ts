@@ -19,10 +19,13 @@ export function registerResultTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get test results for a test
-	server.tool(
+	server.registerTool(
 		"getResults",
-		"Retrieves test results for a specific test / 特定のテストのテスト結果を取得します",
-		getResultsSchema,
+		{
+			description:
+				"Retrieves test results for a specific test / 特定のテストのテスト結果を取得します",
+			inputSchema: getResultsSchema,
+		},
 		async ({ testId, ...filters }) => {
 			try {
 				const results = await testRailClient.results.getResults(
@@ -52,10 +55,13 @@ export function registerResultTools(
 	);
 
 	// Get test results for a specific test case in a run
-	server.tool(
+	server.registerTool(
 		"getResultsForCase",
-		"Retrieves test results for a specific test case in a test run / テスト実行内の特定のテストケースのテスト結果を取得します",
-		getResultsForCaseSchema,
+		{
+			description:
+				"Retrieves test results for a specific test case in a test run / テスト実行内の特定のテストケースのテスト結果を取得します",
+			inputSchema: getResultsForCaseSchema,
+		},
 		async ({ runId, caseId, ...filters }) => {
 			try {
 				const results = await testRailClient.results.getResultsForCase(
@@ -86,10 +92,13 @@ export function registerResultTools(
 	);
 
 	// Get all test results for a test run
-	server.tool(
+	server.registerTool(
 		"getResultsForRun",
-		"Retrieves all test results for a test run / テスト実行の全テスト結果を取得します",
-		getResultsForRunSchema,
+		{
+			description:
+				"Retrieves all test results for a test run / テスト実行の全テスト結果を取得します",
+			inputSchema: getResultsForRunSchema,
+		},
 		async ({ runId, ...filters }) => {
 			try {
 				const results = await testRailClient.results.getResultsForRun(
@@ -119,10 +128,13 @@ export function registerResultTools(
 	);
 
 	// Add a result for a specific test case in a run
-	server.tool(
+	server.registerTool(
 		"addResultForCase",
-		"Adds a test result for a specific test case in a test run / テスト実行内の特定のテストケースにテスト結果を追加します",
-		addResultForCaseSchema,
+		{
+			description:
+				"Adds a test result for a specific test case in a test run / テスト実行内の特定のテストケースにテスト結果を追加します",
+			inputSchema: addResultForCaseSchema,
+		},
 		async ({ runId, caseId, ...resultData }) => {
 			try {
 				// Prepare result data
@@ -186,10 +198,13 @@ export function registerResultTools(
 	);
 
 	// Add results for multiple test cases
-	server.tool(
+	server.registerTool(
 		"addResultsForCases",
-		"Adds test results for multiple test cases in a test run / テスト実行内の複数のテストケースにテスト結果を追加します",
-		addResultsForCasesSchema,
+		{
+			description:
+				"Adds test results for multiple test cases in a test run / テスト実行内の複数のテストケースにテスト結果を追加します",
+			inputSchema: addResultsForCasesSchema,
+		},
 		async ({ runId, results }) => {
 			try {
 				// Prepare data to send to the API

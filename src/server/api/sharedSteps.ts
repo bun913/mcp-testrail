@@ -12,10 +12,13 @@ export function registerSharedStepTools(
 	server: McpServer,
 	testRailClient: TestRailClient,
 ): void {
-	server.tool(
+	server.registerTool(
 		"getSharedSteps",
-		"Retrieves all shared steps for a specified TestRail project / 指定されたTestRailプロジェクトの全共有ステップを取得します",
-		getSharedStepsSchema,
+		{
+			description:
+				"Retrieves all shared steps for a specified TestRail project / 指定されたTestRailプロジェクトの全共有ステップを取得します",
+			inputSchema: getSharedStepsSchema,
+		},
 		async ({ projectId, ...filters }) => {
 			try {
 				const sharedSteps = await testRailClient.sharedSteps.getSharedSteps(

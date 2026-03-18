@@ -18,10 +18,13 @@ export function registerRunTools(
 	testRailClient: TestRailClient,
 ): void {
 	// Get all test runs for a project
-	server.tool(
+	server.registerTool(
 		"getRuns",
-		"Retrieves all test runs for a specified TestRail project / 指定されたTestRailプロジェクトの全テスト実行を取得します",
-		getRunsSchema,
+		{
+			description:
+				"Retrieves all test runs for a specified TestRail project / 指定されたTestRailプロジェクトの全テスト実行を取得します",
+			inputSchema: getRunsSchema,
+		},
 		async ({ projectId, createdBy, ...filters }) => {
 			try {
 				// Convert createdBy to string format
@@ -60,10 +63,13 @@ export function registerRunTools(
 	);
 
 	// Get a specific test run
-	server.tool(
+	server.registerTool(
 		"getRun",
-		"Retrieves details of a specific test run by ID / 特定のテスト実行の詳細をIDで取得します",
-		getRunSchema,
+		{
+			description:
+				"Retrieves details of a specific test run by ID / 特定のテスト実行の詳細をIDで取得します",
+			inputSchema: getRunSchema,
+		},
 		async ({ runId }) => {
 			try {
 				const run = await testRailClient.runs.getRun(runId);
@@ -90,10 +96,13 @@ export function registerRunTools(
 	);
 
 	// Create a new test run
-	server.tool(
+	server.registerTool(
 		"addRun",
-		"Creates a new test run in a TestRail project / TestRailプロジェクトに新しいテスト実行を作成します",
-		addRunSchema,
+		{
+			description:
+				"Creates a new test run in a TestRail project / TestRailプロジェクトに新しいテスト実行を作成します",
+			inputSchema: addRunSchema,
+		},
 		async ({
 			projectId,
 			suiteId,
@@ -143,10 +152,13 @@ export function registerRunTools(
 	);
 
 	// Update an existing test run
-	server.tool(
+	server.registerTool(
 		"updateRun",
-		"Updates an existing test run / 既存のテスト実行を更新します",
-		updateRunSchema,
+		{
+			description:
+				"Updates an existing test run / 既存のテスト実行を更新します",
+			inputSchema: updateRunSchema,
+		},
 		async ({
 			runId,
 			name,
