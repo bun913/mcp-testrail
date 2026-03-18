@@ -43,10 +43,8 @@ You can connect this MCP server by setting like the below. This method uses `npx
 ## Troubleshooting
 
 - **`spawn node ENOENT` errors**: Ensure that Node.js is properly installed and in your PATH.
-- **Connection issues**: Verify that the server is running and the URL is correctly configured in your MCP client.
-- **Authentication issues**: Check your TestRail API credentials in the `.env` file.
-- **SSE connection errors**: If you see `SSE error: TypeError: fetch failed: connect ECONNREFUSED`, make sure the server is running on the specified port.
-- **Your conversation is too long**: Pleae use `limit` and `offset` parameter for test cases
+- **Authentication issues**: Check your TestRail API credentials.
+- **Your conversation is too long**: Use `limit` and `offset` parameters for test cases and sections to paginate results.
 
 ## Contributing
 
