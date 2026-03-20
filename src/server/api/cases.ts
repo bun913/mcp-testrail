@@ -20,6 +20,41 @@ import {
 } from "../../shared/schemas/cases.js";
 
 /**
+ * TestRail case templates use different custom fields for steps:
+ * - Template 1: `custom_steps` + `custom_expected`
+ * - Template 2: `custom_steps_separated`
+ * Sending the wrong fields for a template can yield API errors (e.g. 400) or be ignored by TestRail.
+ */
+function buildCaseStepFields(opts: {
+	templateId?: number;
+	customPrerequisites?: string;
+	customSteps?: string;
+	customExpected?: string;
+	customStepsSeparated?: Array<{ content: string; expected?: string }>;
+}): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	if (opts.customPrerequisites) {
+		out.custom_preconds = opts.customPrerequisites;
+	}
+	const templateId = opts.templateId;
+	if (templateId === 2) {
+		if (opts.customStepsSeparated) {
+			out.custom_steps_separated = opts.customStepsSeparated;
+		}
+	} else if (templateId === 1) {
+		if (opts.customSteps) out.custom_steps = opts.customSteps;
+		if (opts.customExpected) out.custom_expected = opts.customExpected;
+	} else {
+		if (opts.customSteps) out.custom_steps = opts.customSteps;
+		if (opts.customExpected) out.custom_expected = opts.customExpected;
+		if (opts.customStepsSeparated) {
+			out.custom_steps_separated = opts.customStepsSeparated;
+		}
+	}
+	return out;
+}
+
+/**
  * Function to register test case-related API tools
  * @param server McpServer instance
  * @param testRailClient TestRail client instance
@@ -273,19 +308,16 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
-				// Add custom fields if specified
-				if (customPrerequisites) {
-					data.custom_preconds = customPrerequisites;
-				}
-				if (customSteps) {
-					data.custom_steps = customSteps;
-				}
-				if (customExpected) {
-					data.custom_expected = customExpected;
-				}
-				if (customStepsSeparated) {
-					data.custom_steps_separated = customStepsSeparated;
-				}
+				Object.assign(
+					data,
+					buildCaseStepFields({
+						templateId,
+						customPrerequisites,
+						customSteps,
+						customExpected,
+						customStepsSeparated,
+					}),
+				);
 
 				// Add additional custom fields from customFields object
 				if (customFields) {
@@ -399,19 +431,16 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
-				// Add custom fields if specified
-				if (customPrerequisites) {
-					data.custom_preconds = customPrerequisites;
-				}
-				if (customSteps) {
-					data.custom_steps = customSteps;
-				}
-				if (customExpected) {
-					data.custom_expected = customExpected;
-				}
-				if (customStepsSeparated) {
-					data.custom_steps_separated = customStepsSeparated;
-				}
+				Object.assign(
+					data,
+					buildCaseStepFields({
+						templateId,
+						customPrerequisites,
+						customSteps,
+						customExpected,
+						customStepsSeparated,
+					}),
+				);
 
 				// Add additional custom fields from customFields object
 				if (customFields) {
@@ -715,19 +744,16 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
-				// Add custom fields if specified
-				if (customPrerequisites) {
-					data.custom_preconds = customPrerequisites;
-				}
-				if (customSteps) {
-					data.custom_steps = customSteps;
-				}
-				if (customExpected) {
-					data.custom_expected = customExpected;
-				}
-				if (customStepsSeparated) {
-					data.custom_steps_separated = customStepsSeparated;
-				}
+				Object.assign(
+					data,
+					buildCaseStepFields({
+						templateId,
+						customPrerequisites,
+						customSteps,
+						customExpected,
+						customStepsSeparated,
+					}),
+				);
 
 				// Add additional custom fields from customFields object
 				if (customFields) {
