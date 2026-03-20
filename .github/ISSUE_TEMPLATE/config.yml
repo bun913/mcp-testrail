@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/bun913/mcp-testrail/discussions
+    about: For questions and general discussion, please use Discussions instead of filing an issue.
