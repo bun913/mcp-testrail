@@ -17,7 +17,52 @@ import {
 	TestRailCaseSchema,
 	addBddSchema,
 	getBddSchema,
+	TestRailCaseField,
 } from "../../shared/schemas/cases.js";
+
+/**
+ * Resolves required custom fields for the section's project and merges defaults for any
+ * missing required field so a single addCase API call can succeed without 400 retries.
+ * User-provided customFields override defaults.
+ * (Cherry-picked from 86655a5; see also buildCaseStepFields for template-specific step fields.)
+ */
+async function mergeRequiredCustomFields(
+	client: TestRailClient,
+	sectionId: number,
+	customFields: Record<string, unknown> | undefined,
+): Promise<Record<string, unknown>> {
+	const section = await client.sections.getSection(sectionId);
+	const suite = await client.suites.getSuite(section.suite_id);
+	const projectId = suite.project_id;
+	const caseFields = await client.cases.getCaseFields();
+
+	const merged: Record<string, unknown> = {};
+
+	for (const field of caseFields as TestRailCaseField[]) {
+		for (const config of field.configs) {
+			if (!config.options.is_required) continue;
+			const isGlobal = config.context.is_global;
+			const projectIds = config.context.project_ids ?? [];
+			if (!isGlobal && !projectIds.includes(projectId)) continue;
+
+			const key = field.system_name;
+			const existing = customFields?.[key];
+			if (existing !== undefined && existing !== null && existing !== "") {
+				merged[key] = existing;
+				break;
+			}
+			const defaultValue = config.options.default_value;
+			if (defaultValue !== undefined && defaultValue !== "") {
+				// TestRail dropdown/select fields often expect number; coerce if numeric string
+				const num = Number(defaultValue);
+				merged[key] = Number.isNaN(num) ? defaultValue : num;
+			}
+			break;
+		}
+	}
+
+	return { ...merged, ...customFields };
+}
 
 /**
  * TestRail case templates use different custom fields for steps:
@@ -41,10 +86,13 @@ function buildCaseStepFields(opts: {
 		if (opts.customStepsSeparated) {
 			out.custom_steps_separated = opts.customStepsSeparated;
 		}
+		// Do not send custom_steps or custom_expected for template 2 — TestRail ignores them
 	} else if (templateId === 1) {
 		if (opts.customSteps) out.custom_steps = opts.customSteps;
 		if (opts.customExpected) out.custom_expected = opts.customExpected;
+		// Do not send custom_steps_separated for template 1 — TestRail ignores it
 	} else {
+		// templateId not set: backward-compatible, send whatever is provided
 		if (opts.customSteps) out.custom_steps = opts.customSteps;
 		if (opts.customExpected) out.custom_expected = opts.customExpected;
 		if (opts.customStepsSeparated) {
@@ -237,7 +285,7 @@ export function registerCaseTools(
 	// Add a new test case
 	server.tool(
 		"addCase",
-		"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Use getCaseTypes to find valid typeId values. NOTE: templateId=2 is required to use customStepsSeparated (array of step objects with 'content' and 'expected' fields). For simple text steps, use customSteps and customExpected instead. Use customFields for any additional custom fields (e.g., {custom_case_security_score: 'high'}).",
+		"Creates a new test case in TestRail. REQUIRED: sectionId, title. OPTIONAL: typeId, priorityId, templateId, customSteps, customExpected, customStepsSeparated, customFields, etc. Required custom fields for the section's project are auto-filled with their defaults when missing, so one addCase call can succeed. Override via customFields (e.g. { custom_automation_type: 1 }). Use getCaseTypes for valid typeId. templateId=2 is required for customStepsSeparated; template 1 uses customSteps/customExpected.",
 		{
 			sectionId: addTestCaseSchema.shape.sectionId,
 			title: addTestCaseSchema.shape.title,
@@ -270,6 +318,12 @@ export function registerCaseTools(
 					customStepsSeparated,
 					customFields,
 				} = args;
+				// Resolve required custom fields with defaults so one API call succeeds
+				const mergedCustomFields = await mergeRequiredCustomFields(
+					testRailClient,
+					sectionId,
+					customFields,
+				);
 				// Build test case data
 				const data: Record<string, unknown> = {};
 
@@ -308,6 +362,14 @@ export function registerCaseTools(
 					data.template_id = templateId;
 				}
 
+				// Required custom field defaults + user customFields (explicit step params win below)
+				if (Object.keys(mergedCustomFields).length > 0) {
+					for (const [key, value] of Object.entries(mergedCustomFields)) {
+						data[key] = value;
+					}
+				}
+
+				// Step/expected fields by template (template 1 vs 2)
 				Object.assign(
 					data,
 					buildCaseStepFields({
@@ -318,13 +380,6 @@ export function registerCaseTools(
 						customStepsSeparated,
 					}),
 				);
-
-				// Add additional custom fields from customFields object
-				if (customFields) {
-					for (const [key, value] of Object.entries(customFields)) {
-						data[key] = value;
-					}
-				}
 
 				// Remove empty, undefined, null fields to avoid API errors
 				for (const key of Object.keys(data)) {
