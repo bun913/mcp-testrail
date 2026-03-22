@@ -45,6 +45,17 @@ You can connect this MCP server by setting like the below. This method uses `npx
 - **`spawn node ENOENT` errors**: Ensure that Node.js is properly installed and in your PATH.
 - **Authentication issues**: Check your TestRail API credentials.
 - **Your conversation is too long**: Use `limit` and `offset` parameters for test cases and sections to paginate results.
+- **HTTP 400 errors when creating/updating test cases**: TestRail projects have different templates, custom fields, and required fields. This MCP server passes your parameters directly to the TestRail API — it does not validate or transform them. If you encounter 400 errors, define your project's rules in `CLAUDE.md` or `AGENTS.md` so the LLM sends the correct parameters. For example:
+
+  ```markdown
+  # TestRail Rules for This Project
+  - Project ID: 1
+  - Always use template 2 (Separated Steps) when creating test cases
+    - Use `customStepsSeparated` (array of step objects)
+    - Do NOT send `customSteps` or `customExpected` with template 2
+  - Required custom fields: custom_automation_type (default: 0)
+  - Call `getCaseFields` at the start of a session to check available fields
+  ```
 
 ## Contributing
 
