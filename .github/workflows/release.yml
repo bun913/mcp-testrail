@@ -27,6 +27,10 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
+      - uses: flatt-security/setup-takumi-guard-npm@v1
+        with:
+          bot-id: "BT01KN72JSWKBXV4PD0S3JTY1PSZ"
+
       - name: Configure Git
         run: |
           git config user.name 'GitHub Action'

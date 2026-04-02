@@ -6,11 +6,18 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for Takumi Guard OIDC
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
+
+      - uses: flatt-security/setup-takumi-guard-npm@v1
+        with:
+          bot-id: "BT01KN72JSWKBXV4PD0S3JTY1PSZ"
 
       - name: Install dependencies
         run: npm ci
