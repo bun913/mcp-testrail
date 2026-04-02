@@ -49,7 +49,7 @@ jobs:
         run: npm run build
       
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --registry https://registry.npmjs.org
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
