@@ -10,7 +10,7 @@ import {
 	AddCaseData,
 	UpdateCaseData,
 } from "../../shared/schemas/cases.js";
-import { handleApiError } from "./utils.js";
+import { handleApiError, normalizeListResponse } from "./utils.js";
 import {
 	GetTestCaseInput,
 	GetTestCasesInput,
@@ -70,25 +70,21 @@ export class CasesClient extends BaseTestRailClient {
 				...params,
 			};
 
-			const response: AxiosResponse<{
-				cases: TestRailCase[];
-				offset: number;
-				limit: number;
-				size: number;
-				_links: { next: string | null; prev: string | null };
-			}> = await this.client.get(`/api/v2/get_cases/${projectId}`, {
-				params: {
-					suite_id: suiteId,
-					...defaultParams,
+			const response: AxiosResponse<unknown> = await this.client.get(
+				`/api/v2/get_cases/${projectId}`,
+				{
+					params: {
+						suite_id: suiteId,
+						...defaultParams,
+					},
 				},
-			});
-			return {
-				cases: response.data.cases,
-				offset: response.data.offset,
-				limit: response.data.limit,
-				size: response.data.size,
-				_links: response.data._links,
-			};
+			);
+			return normalizeListResponse<"cases", TestRailCase>(
+				response.data,
+				"cases",
+				defaultParams.limit,
+				defaultParams.offset,
+			);
 		} catch (error) {
 			throw handleApiError(
 				error,

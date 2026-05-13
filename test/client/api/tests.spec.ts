@@ -109,4 +109,36 @@ describe('Tests API', () => {
     // Verify result
     expect(result.tests).toEqual(mockTests);
   });
-}); 
+
+  it('normalizes legacy flat-array response from get_tests (TestRail < 6.7 or pagination disabled)', async () => {
+    // TestRail instances without the paginated envelope return a flat array
+    // directly. Before normalization this crashed with
+    // "Cannot read properties of undefined" when callers read .tests / ._links.
+    const mockTests = [
+      {
+        assignedto_id: 1,
+        case_id: 201,
+        estimate: "30s",
+        estimate_forecast: "1m",
+        id: 2001,
+        milestone_id: 5,
+        priority_id: 2,
+        refs: "REQ-100",
+        run_id: 50,
+        status_id: 1,
+        title: "Legacy Test 1",
+        type_id: 1
+      }
+    ];
+    mockAxiosInstance.get.mockResolvedValue({ data: mockTests });
+
+    const result = await client.tests.getTests(50);
+
+    expect(result.tests).toEqual(mockTests);
+    expect(result.offset).toBe(0);
+    expect(result.limit).toBe(50);
+    expect(result.size).toBe(1);
+    expect(result._links.next).toBeNull();
+    expect(result._links.prev).toBeNull();
+  });
+});

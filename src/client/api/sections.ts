@@ -1,6 +1,6 @@
 import { BaseTestRailClient } from "./baseClient.js";
 import { TestRailSection } from "../../shared/schemas/sections.js";
-import { handleApiError } from "./utils.js";
+import { handleApiError, normalizeListResponse } from "./utils.js";
 import {
 	GetSectionInputType,
 	GetSectionsInputType,
@@ -59,15 +59,16 @@ export class SectionsClient extends BaseTestRailClient {
 				? { ...defaultParams, suite_id: suiteId }
 				: defaultParams;
 
-			const response = await this.client.get<{
-				offset: number;
-				limit: number;
-				size: number;
-				_links: { next: string | null; prev: string | null };
-				sections: TestRailSection[];
-			}>(url, { params: queryParams });
+			const response = await this.client.get<unknown>(url, {
+				params: queryParams,
+			});
 
-			return response.data;
+			return normalizeListResponse<"sections", TestRailSection>(
+				response.data,
+				"sections",
+				defaultParams.limit,
+				defaultParams.offset,
+			);
 		} catch (error) {
 			throw handleApiError(
 				error,

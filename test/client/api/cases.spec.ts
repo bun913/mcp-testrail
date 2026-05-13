@@ -199,6 +199,50 @@ describe('Cases API', () => {
     expect(result).toEqual(mockCasesResponse);
   });
 
+  it('normalizes legacy flat-array response from get_cases (TestRail < 6.7 or pagination disabled)', async () => {
+    // TestRail instances without the paginated envelope return a flat array
+    // directly. Before normalization this crashed the server handler with
+    // "Cannot read properties of undefined (reading 'map')".
+    const mockCasesArray = [
+      {
+        id: 10,
+        title: 'Legacy Case 1',
+        section_id: 1,
+        template_id: 1,
+        type_id: 1,
+        priority_id: 2,
+        created_by: 1,
+        created_on: 1609459200,
+        updated_by: 1,
+        updated_on: 1609459300,
+        suite_id: 1
+      },
+      {
+        id: 11,
+        title: 'Legacy Case 2',
+        section_id: 1,
+        template_id: 1,
+        type_id: 1,
+        priority_id: 3,
+        created_by: 1,
+        created_on: 1609459200,
+        updated_by: 1,
+        updated_on: 1609459300,
+        suite_id: 1
+      }
+    ];
+    mockAxiosInstance.get.mockResolvedValue({ data: mockCasesArray });
+
+    const result = await client.cases.getCases(1, 1, { limit: 50, offset: 0 });
+
+    expect(result.cases).toEqual(mockCasesArray);
+    expect(result.offset).toBe(0);
+    expect(result.limit).toBe(50);
+    expect(result.size).toBe(2);
+    expect(result._links.next).toBeNull();
+    expect(result._links.prev).toBeNull();
+  });
+
   it('retrieves test cases with all optional parameters', async () => {
     // Mock response
     mockAxiosInstance.get.mockResolvedValue({ data: {} });

@@ -5,7 +5,7 @@ import {
 	GetTestsInput,
 	TestRailTest,
 } from "../../shared/schemas/tests.js";
-import { handleApiError } from "./utils.js";
+import { handleApiError, normalizeListResponse } from "./utils.js";
 
 interface GetTestsParams {
 	limit?: number;
@@ -53,23 +53,19 @@ export class TestsClient extends BaseTestRailClient {
 				...params,
 			};
 
-			const response: AxiosResponse<{
-				tests: TestRailTest[];
-				offset: number;
-				limit: number;
-				size: number;
-				_links: { next: string | null; prev: string | null };
-			}> = await this.client.get(`/api/v2/get_tests/${runId}`, {
-				params: defaultParams,
-			});
+			const response: AxiosResponse<unknown> = await this.client.get(
+				`/api/v2/get_tests/${runId}`,
+				{
+					params: defaultParams,
+				},
+			);
 
-			return {
-				tests: response.data.tests,
-				offset: response.data.offset,
-				limit: response.data.limit,
-				size: response.data.size,
-				_links: response.data._links,
-			};
+			return normalizeListResponse<"tests", TestRailTest>(
+				response.data,
+				"tests",
+				defaultParams.limit,
+				defaultParams.offset,
+			);
 		} catch (error) {
 			throw handleApiError(error, `Failed to get tests for run ${runId}`);
 		}

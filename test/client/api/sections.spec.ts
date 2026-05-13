@@ -112,6 +112,42 @@ describe('Sections API', () => {
     expect(result._links.prev).not.toBeNull();
   });
   
+  it('normalizes legacy flat-array response from get_sections (TestRail < 6.7 or pagination disabled)', async () => {
+    // TestRail instances without the paginated envelope return a flat array
+    // directly. Before normalization the server handler silently dropped the
+    // section list because every envelope field read as undefined.
+    const mockSections = [
+      {
+        id: 1,
+        name: 'Legacy Section 1',
+        description: null,
+        suite_id: 1,
+        parent_id: null,
+        depth: 0,
+        display_order: 1
+      },
+      {
+        id: 2,
+        name: 'Legacy Section 2',
+        description: null,
+        suite_id: 1,
+        parent_id: 1,
+        depth: 1,
+        display_order: 2
+      }
+    ];
+    mockAxiosInstance.get.mockResolvedValue({ data: mockSections });
+
+    const result = await client.sections.getSections(1, 1, { limit: 250, offset: 0 });
+
+    expect(result.sections).toEqual(mockSections);
+    expect(result.offset).toBe(0);
+    expect(result.limit).toBe(250);
+    expect(result.size).toBe(2);
+    expect(result._links.next).toBeNull();
+    expect(result._links.prev).toBeNull();
+  });
+
   it('creates a new section', async () => {
     // Mock response
     const mockSection = { 
