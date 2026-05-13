@@ -110,6 +110,32 @@ describe('Tests API', () => {
     expect(result.tests).toEqual(mockTests);
   });
 
+  it('signals hasMore when legacy flat-array response fills the requested limit (heuristic)', async () => {
+    // Same heuristic as cases / sections: array length === requested limit -> assume
+    // more data may exist on the server.
+    const mockTests = Array.from({ length: 4 }, (_, i) => ({
+      assignedto_id: 1,
+      case_id: 300 + i,
+      estimate: "30s",
+      estimate_forecast: "1m",
+      id: 3000 + i,
+      milestone_id: 5,
+      priority_id: 2,
+      refs: "REQ-X",
+      run_id: 50,
+      status_id: 1,
+      title: `Test ${3000 + i}`,
+      type_id: 1
+    }));
+    mockAxiosInstance.get.mockResolvedValue({ data: mockTests });
+
+    const result = await client.tests.getTests(50, { limit: 4, offset: 0 });
+
+    expect(result.tests).toHaveLength(4);
+    expect(result._links.next).not.toBeNull();
+    expect(result._links.next).toContain('offset=4');
+  });
+
   it('normalizes legacy flat-array response from get_tests (TestRail < 6.7 or pagination disabled)', async () => {
     // TestRail instances without the paginated envelope return a flat array
     // directly. Before normalization this crashed with

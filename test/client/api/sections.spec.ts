@@ -112,6 +112,27 @@ describe('Sections API', () => {
     expect(result._links.prev).not.toBeNull();
   });
   
+  it('signals hasMore when legacy flat-array response fills the requested limit (heuristic)', async () => {
+    // Same heuristic as cases: array length === requested limit -> assume more
+    // data may exist on the server.
+    const mockSections = Array.from({ length: 5 }, (_, i) => ({
+      id: 100 + i,
+      name: `Section ${100 + i}`,
+      description: null,
+      suite_id: 1,
+      parent_id: null,
+      depth: 0,
+      display_order: i + 1,
+    }));
+    mockAxiosInstance.get.mockResolvedValue({ data: mockSections });
+
+    const result = await client.sections.getSections(1, 1, { limit: 5, offset: 0 });
+
+    expect(result.sections).toHaveLength(5);
+    expect(result._links.next).not.toBeNull();
+    expect(result._links.next).toContain('offset=5');
+  });
+
   it('normalizes legacy flat-array response from get_sections (TestRail < 6.7 or pagination disabled)', async () => {
     // TestRail instances without the paginated envelope return a flat array
     // directly. Before normalization the server handler silently dropped the

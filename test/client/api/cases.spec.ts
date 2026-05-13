@@ -199,6 +199,59 @@ describe('Cases API', () => {
     expect(result).toEqual(mockCasesResponse);
   });
 
+  it('signals hasMore when legacy flat-array response fills the requested limit (heuristic)', async () => {
+    // When TestRail returns a flat array whose length equals the requested limit,
+    // we cannot tell from the response alone whether more data exists on the server.
+    // The normalizer must err on the side of "more is likely" by emitting a truthy
+    // _links.next, otherwise consumers would silently drop subsequent pages.
+    const mockCasesArray = Array.from({ length: 3 }, (_, i) => ({
+      id: 100 + i,
+      title: `Case ${100 + i}`,
+      section_id: 1,
+      template_id: 1,
+      type_id: 1,
+      priority_id: 2,
+      created_by: 1,
+      created_on: 1609459200,
+      updated_by: 1,
+      updated_on: 1609459300,
+      suite_id: 1
+    }));
+    mockAxiosInstance.get.mockResolvedValue({ data: mockCasesArray });
+
+    // Request limit=3, server returns exactly 3 -> "could be more" must be signalled
+    const result = await client.cases.getCases(1, 1, { limit: 3, offset: 0 });
+
+    expect(result.cases).toHaveLength(3);
+    expect(result._links.next).not.toBeNull();
+    expect(result._links.next).toContain('offset=3');
+    expect(result._links.prev).toBeNull(); // offset 0 has no prev
+  });
+
+  it('synthesizes _links.prev for legacy responses when offset > 0', async () => {
+    const mockCasesArray = Array.from({ length: 2 }, (_, i) => ({
+      id: 200 + i,
+      title: `Case ${200 + i}`,
+      section_id: 1,
+      template_id: 1,
+      type_id: 1,
+      priority_id: 2,
+      created_by: 1,
+      created_on: 1609459200,
+      updated_by: 1,
+      updated_on: 1609459300,
+      suite_id: 1
+    }));
+    mockAxiosInstance.get.mockResolvedValue({ data: mockCasesArray });
+
+    // Asking for offset=50 limit=50, got 2 back -> last page (no next), has prev
+    const result = await client.cases.getCases(1, 1, { limit: 50, offset: 50 });
+
+    expect(result._links.next).toBeNull(); // 2 < 50, definitely the last page
+    expect(result._links.prev).not.toBeNull();
+    expect(result._links.prev).toContain('offset=0');
+  });
+
   it('normalizes legacy flat-array response from get_cases (TestRail < 6.7 or pagination disabled)', async () => {
     // TestRail instances without the paginated envelope return a flat array
     // directly. Before normalization this crashed the server handler with
